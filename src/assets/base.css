@@ -1,0 +1,66 @@
+:root {
+    --theme-color: #ff7b42;
+    --theme-color-rgb: 255, 123, 66;
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-tertiary: #333;
+    --text-primary: #000;
+    --text-secondary: #999;
+    --text-light: #fff;
+    --border-radius: 20px;
+    --border-radius-small: 10px;
+    --border-radius-large: 25px;
+    --transition: all 0.3s ease;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.login-page,
+.home-page {
+    display: grid;
+    grid-template-columns: 350px 400px 350px;
+    height: 450px;
+    gap: 30px;
+    width: 100%;
+    max-width: 1180px;
+    align-items: start;
+    justify-content: center;
+    justify-items: center;
+}
+
+/* Container Styles */
+.container-left,
+.container-right {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    height: 100%;
+    width: 100%;
+}
+
+.container-main {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    height: 100%;
+    width: 100%;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
