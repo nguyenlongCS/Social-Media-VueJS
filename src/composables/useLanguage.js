@@ -59,14 +59,19 @@ const translations = {
   }
 }
 
-// Tạo state global cho ngôn ngữ và khôi phục từ centralized storage
-const storage = useStorage()
-const currentLanguage = ref(storage.language.get())
+// Global state for language - will be initialized when first used
+let currentLanguage = null
 
 export const useLanguage = () => {
+  const storage = useStorage()
+  
+  // Initialize global state only once
+  if (currentLanguage === null) {
+    currentLanguage = ref(storage.language.get())
+  }
+
   const toggleLanguage = () => {
     currentLanguage.value = currentLanguage.value === 'EN' ? 'VN' : 'EN'
-    // Lưu ngôn ngữ đã chọn thông qua centralized storage
     storage.language.set(currentLanguage.value)
   }
 

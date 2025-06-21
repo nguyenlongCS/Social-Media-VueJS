@@ -1,9 +1,11 @@
+// composables/useAuth.js
 import { useRouter } from 'vue-router'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
-import { auth, loginWithGoogle, loginWithFacebook } from '@/components/firebase.js'
+import { auth } from '@/components/firebase.js'
 import { useAuthStore } from '@/stores/authStore'
 import { useError } from '@/composables/useError.js'
 import { useStorage } from '@/composables/useStorage.js'
+import { useSocialLogin } from '@/composables/useSocialLogin.js'
 
 export function useAuth() {
   const router = useRouter()
@@ -19,6 +21,9 @@ export function useAuth() {
     withErrorHandling,
     getLoadingMessage 
   } = useError()
+  
+  // Import social login handlers from dedicated composable
+  const { handleGoogleLogin, handleFacebookLogin } = useSocialLogin()
 
   // Hàm mã hóa mật khẩu đơn giản (Base64)
   const encryptPassword = (password) => {
@@ -54,44 +59,8 @@ export function useAuth() {
     )
   }
 
-  // Google Login
-  const handleGoogleLogin = async () => {
-    return withErrorHandling(
-      async () => {
-        const user = await loginWithGoogle()
-        console.log('Google login successful:', user)
-        router.push('/home')
-        return user
-      },
-      'logging-in',
-      null,
-      'login-failed'
-    )
-  }
-
-  // Facebook Login
-  const handleFacebookLogin = async () => {
-    return withErrorHandling(
-      async () => {
-        const user = await loginWithFacebook()
-        console.log('Facebook login successful:', user)
-        router.push('/home')
-        return user
-      },
-      'logging-in',
-      null,
-      'login-failed'
-    )
-  }
-
   // Signup
-  const handleSignup = async (signupForm, validate = true) => {
-    // Allow bypassing validation if already validated externally
-    if (validate && signupForm.password !== signupForm.confirmPassword) {
-      setError('password-mismatch')
-      return Promise.reject(new Error('Password mismatch'))
-    }
-
+  const handleSignup = async (signupForm) => {
     return withErrorHandling(
       async () => {
         await createUserWithEmailAndPassword(auth, signupForm.email, signupForm.password)
@@ -104,13 +73,7 @@ export function useAuth() {
   }
 
   // Forgot Password
-  const handleForgotPassword = async (email, validate = true) => {
-    // Allow bypassing validation if already validated externally
-    if (validate && !email) {
-      setError('email-required')
-      return Promise.reject(new Error('Email required'))
-    }
-
+  const handleForgotPassword = async (email) => {
     return withErrorHandling(
       async () => {
         await sendPasswordResetEmail(auth, email)
@@ -141,8 +104,8 @@ export function useAuth() {
     encryptPassword,
     decryptPassword,
     handleLogin,
-    handleGoogleLogin,
-    handleFacebookLogin,
+    handleGoogleLogin, // Reuse from useSocialLogin
+    handleFacebookLogin, // Reuse from useSocialLogin
     handleSignup,
     handleForgotPassword,
     handleLogout,

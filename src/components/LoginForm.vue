@@ -196,6 +196,7 @@ const onLogin = () => {
     }
   }
   
+  // Now we can call handleLogin without validation since we already validated
   handleLogin(loginForm, rememberMe.value)
 }
 
@@ -210,8 +211,8 @@ const onSignup = () => {
     }
   }
   
-  // Pass validate=false since we already validated
-  handleSignup(signupForm, false)
+  // Now we can call handleSignup without validation since we already validated
+  handleSignup(signupForm)
 }
 
 const onForgotPassword = () => {
@@ -225,8 +226,8 @@ const onForgotPassword = () => {
     }
   }
   
-  // Pass validate=false since we already validated
-  handleForgotPassword(loginForm.email, false)
+  // Now we can call handleForgotPassword without validation since we already validated
+  handleForgotPassword(loginForm.email)
 }
 
 // Helper to get dynamic loading text

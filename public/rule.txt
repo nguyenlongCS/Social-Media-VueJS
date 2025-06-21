@@ -1,0 +1,192 @@
+# PROJECT RULES - FIREBASE AUTHENTICATION APP
+
+## STYLE RULES
+
+### CSS Variables
+- Sử dụng CSS custom properties cho tất cả màu sắc và kích thước
+- Theme color có thể thay đổi được thông qua `--theme-color` và `--theme-color-rgb`
+- Background colors được phân cấp: primary, secondary, tertiary
+- Text colors được phân loại: primary, secondary, light
+- Border radius có 3 cấp độ: small (10px), normal (20px), large (25px)
+- Transition mặc định: `all 0.3s ease`
+
+### Layout Structure
+- Sử dụng CSS Grid với layout 3 cột: 350px - 400px - 350px
+- Height cố định: 450px cho container chính
+- Gap: 30px giữa các container
+- Responsive design với max-width: 1180px
+
+### Component Styling
+- Container có background màu secondary với border-radius
+- Form elements sử dụng gradient background với theme color
+- Button hover effects với transform và box-shadow
+- Input fields có placeholder styling với màu tertiary
+- Error/Success messages có background trong suốt với border màu tương ứng
+
+### Visual Effects
+- Gradient backgrounds sử dụng theme color
+- Hover effects với translateY và shadow
+- Tab buttons với active state highlighting
+- Social buttons với màu brand riêng biệt
+- Loading states với opacity và cursor changes
+
+## ARCHITECTURE
+
+### Folder Structure
+```
+/components
+  - LoginForm.vue
+  - SocialLogin.vue
+  - RightNav.vue
+  - firebase.js
+/composables
+  - useAuth.js
+  - useError.js
+  - useLanguage.js
+  - useStorage.js
+  - useTheme.js
+  - useValidation.js
+  - useQrCode.js
+  - useSocialLogin.js
+/views
+  - Login.vue
+  - Home.vue
+/assets
+  - main.css
+```
+
+### Composables Pattern
+- Mỗi composable có trách nhiệm riêng biệt và rõ ràng
+- State được quản lý centralized qua composables
+- Reactive refs được export để components có thể sử dụng
+- Methods được group theo chức năng
+
+### Component Communication
+- Parent-child communication qua props và emits
+- Global state management qua composables
+- Event handling được centralized trong composables
+- No direct DOM manipulation trong components
+
+### Firebase Integration
+- Configuration được centralized trong firebase.js
+- Authentication providers được khởi tạo sẵn
+- Error handling được wrapper trong try-catch
+- Auth state được quản lý qua composables
+
+## LOGIC FLOW
+
+### Authentication Flow
+1. User input validation qua useValidation
+2. Error clearing trước mỗi action
+3. Loading state activation
+4. Firebase authentication call
+5. Success/Error handling với appropriate messages
+6. Router navigation sau successful login
+7. Storage management cho remember me feature
+
+### Form Validation Flow
+1. Real-time validation không được implement
+2. Validation chỉ trigger khi submit
+3. Error messages được display globally
+4. Validation errors được clear khi switch tabs
+5. Separate validation cho login, signup, forgot password
+
+### State Management Flow
+1. Local state trong components cho UI controls
+2. Global state trong composables cho business logic
+3. Storage persistence cho user preferences
+4. Reactive updates cho theme và language changes
+
+### Error Handling Flow
+1. Centralized error messages với multi-language support
+2. Firebase error codes được map sang user-friendly messages
+3. Loading states được manage globally
+4. Success messages tự động clear khi có error mới
+
+## DATA MANAGEMENT
+
+### Storage Strategy
+- localStorage cho persistent data (theme, language, remembered credentials)
+- Reactive refs cho runtime state
+- Centralized storage management qua useStorage composable
+- Error handling cho storage operations
+
+### Language Management
+- Multi-language support với EN/VN
+- Translation keys được structure theo feature
+- Dynamic language switching với persistence
+- Computed properties cho reactive translations
+
+### Theme Management
+- CSS custom properties được update dynamically
+- Theme persistence qua localStorage
+- Color và RGB values được manage riêng biệt
+- Initialization khi app startup
+
+### Form Data Management
+- Reactive objects cho form state
+- Separate forms cho login/signup
+- Password encryption cho remember me feature
+- Form reset sau successful operations
+
+## SECURITY CONSIDERATIONS
+
+### Authentication Security
+- Password encryption sử dụng Base64 (basic level)
+- Firebase Auth handle secure authentication
+- No sensitive data trong localStorage trừ encrypted password
+- Error messages không expose sensitive information
+
+### Data Protection
+- No plain text password storage
+- User credentials chỉ handle qua Firebase Auth
+- Storage keys được centralized và managed
+- Error logging không include sensitive data
+
+## PERFORMANCE RULES
+
+### Loading Strategy
+- Lazy loading cho external libraries (QR Code)
+- Conditional imports cho social login providers
+- Efficient state updates với computed properties
+- Minimal re-renders với proper reactive design
+
+### Memory Management
+- Event listeners cleanup trong onUnmounted
+- Proper component lifecycle management
+- Efficient composable state sharing
+- No memory leaks từ watchers hoặc subscriptions
+
+## ACCESSIBILITY RULES
+
+### Form Accessibility
+- Proper input types (email, password)
+- Required attributes cho form validation
+- Label associations cho screen readers
+- Keyboard navigation support
+
+### Visual Accessibility
+- Proper color contrast cho text và backgrounds
+- Focus states cho interactive elements
+- Error states với visual và text indicators
+- Loading states với appropriate feedback
+
+## MAINTENANCE RULES
+
+### Code Organization
+- Single responsibility principle cho composables
+- Clear separation of concerns
+- Consistent naming conventions
+- Comprehensive error handling
+
+### Documentation Standards
+- JSDoc comments cho complex functions
+- README documentation cho setup
+- Code comments cho business logic
+- API documentation cho composables
+
+### Testing Considerations
+- Unit testable composables structure
+- Mockable external dependencies
+- Error scenario coverage
+- User flow testing capability

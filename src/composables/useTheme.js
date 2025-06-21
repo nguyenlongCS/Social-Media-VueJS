@@ -1,14 +1,23 @@
+// composables/useTheme.js
 import { ref, onMounted } from 'vue'
 import { useStorage } from '@/composables/useStorage.js'
 
-// Khôi phục theme từ centralized storage
-const storage = useStorage()
-const savedTheme = storage.theme.get()
-
-const currentTheme = ref(savedTheme.color)
-const currentThemeRgb = ref(savedTheme.rgb)
+// Global state for theme - will be initialized when first used
+let currentTheme = null
+let currentThemeRgb = null
+let isInitialized = false
 
 export const useTheme = () => {
+  const storage = useStorage()
+  
+  // Initialize global state only once
+  if (!isInitialized) {
+    const savedTheme = storage.theme.get()
+    currentTheme = ref(savedTheme.color)
+    currentThemeRgb = ref(savedTheme.rgb)
+    isInitialized = true
+  }
+
   const initializeTheme = () => {
     // Áp dụng theme đã lưu khi khởi tạo
     document.documentElement.style.setProperty('--theme-color', currentTheme.value)

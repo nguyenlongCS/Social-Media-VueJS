@@ -1,11 +1,12 @@
 <template>
-  <div class="container-right-nav">
-    <button class="nav-circle yellow-circle" @click="changeThemeColor('#ffeb7c', '255, 235, 124')"></button>
-    <button class="nav-circle green-circle" @click="changeThemeColor('#a4f28d', '164, 242, 141')"></button>
-    <button class="nav-circle orange-circle" @click="changeThemeColor('#ff7b42', '255, 123, 66')"></button>
-    <button class="nav-button language-button" @click="toggleLanguage">{{ t.languageBtn }}</button>
-    <button class="nav-button logout-button" :class="{ disabled: !isLoggedIn }" @click="handleLogout" :disabled="!isLoggedIn">{{ t.logoutBtn }}</button>
-  </div>
+    <div class="container-right-nav">
+        <button class="nav-circle orange-circle" @click="changeThemeColor('#ff7b42', '255, 123, 66')"></button>
+        <button class="nav-circle green-circle" @click="changeThemeColor('#a4f28d', '164, 242, 141')"></button>
+        <button class="nav-circle yellow-circle" @click="changeThemeColor('#ffeb7c', '255, 235, 124')"></button>
+        <button class="nav-button language-button" @click="toggleLanguage">{{ t.languageBtn }}</button>
+        <button class="nav-button logout-button" :class="{ disabled: !isLoggedIn }" @click="handleLogout"
+            :disabled="!isLoggedIn">{{ t.logoutBtn }}</button>
+    </div>
 </template>
 
 <script setup>
