@@ -41,18 +41,12 @@ export function useQrCode() {
       // Generate session ID
       qrSessionId.value = generateSessionId()
       
-      // Tạo data cho QR code (có thể customize)
-      const qrData = {
-        action: 'login',
-        sessionId: qrSessionId.value,
-        timestamp: Date.now(),
-        expires: Date.now() + (5 * 60 * 1000), // 5 minutes expiry
-        url: `${window.location.origin}/qr-login/${qrSessionId.value}`
-      }
+      // Tạo URL trực tiếp cho QR code thay vì JSON
+      const qrUrl = `${window.location.origin}/qr-login/${qrSessionId.value}`
       
-      // Tạo QR code với thư viện
+      // Tạo QR code với URL trực tiếp
       new window.QRCode(qrElement, {
-        text: JSON.stringify(qrData),
+        text: qrUrl,
         width: 180,
         height: 180,
         colorDark: '#000000',
