@@ -5,6 +5,26 @@ export function useQrCode() {
   const qrCodeElement = ref(null)
   const qrSessionId = ref(null)
   const pollingInterval = ref(null)
+  const pollingTimeout = ref(null)
+  
+  // QR code configuration
+  const QR_CONFIG = {
+    width: 180,
+    height: 180,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: 'M',
+    pollingInterval: 2000,
+    maxPollingTime: 5 * 60 * 1000 // 5 minutes
+  }
+
+  // Status messages and colors
+  const statusConfig = {
+    scanned: { message: 'QR đã được quét<br>Chờ xác nhận...', color: '#FFA500' },
+    confirmed: { message: 'Đăng nhập thành công!<br>Đang chuyển hướng...', color: '#4CAF50' },
+    cancelled: { message: 'Đăng nhập bị hủy<br>Đang tạo mã mới...', color: '#FF6B6B' },
+    expired: { message: 'QR đã hết hạn<br>Đang tạo mã mới...', color: '#999999' }
+  }
   
   // Load QRCode library nếu chưa có
   const loadQRCodeLibrary = () => {
@@ -27,6 +47,18 @@ export function useQrCode() {
     return 'qr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
   }
   
+  // Cleanup all intervals and timeouts
+  const cleanup = () => {
+    if (pollingInterval.value) {
+      clearInterval(pollingInterval.value)
+      pollingInterval.value = null
+    }
+    if (pollingTimeout.value) {
+      clearTimeout(pollingTimeout.value)
+      pollingTimeout.value = null
+    }
+  }
+  
   // Tạo QR code thực sự
   const generateQrCode = async () => {
     const qrElement = document.getElementById('qrcode')
@@ -47,11 +79,11 @@ export function useQrCode() {
       // Tạo QR code với URL trực tiếp
       new window.QRCode(qrElement, {
         text: qrUrl,
-        width: 180,
-        height: 180,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: window.QRCode.CorrectLevel.M
+        width: QR_CONFIG.width,
+        height: QR_CONFIG.height,
+        colorDark: QR_CONFIG.colorDark,
+        colorLight: QR_CONFIG.colorLight,
+        correctLevel: window.QRCode.CorrectLevel[QR_CONFIG.correctLevel]
       })
       
       // Start polling for QR scan status
@@ -59,30 +91,12 @@ export function useQrCode() {
       
     } catch (error) {
       console.error('Error generating QR code:', error)
-      // Fallback: hiển thị text thông báo
-      qrElement.innerHTML = `
-        <div style="
-          width: 180px;
-          height: 180px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f5f5f5;
-          font-size: 12px;
-          text-align: center;
-          color: #666;
-        ">
-          QR Code<br>Loading...
-        </div>
-      `
     }
   }
 
   // Polling to check QR scan status
   const startPolling = () => {
-    if (pollingInterval.value) {
-      clearInterval(pollingInterval.value)
-    }
+    cleanup() // Ensure clean state
     
     pollingInterval.value = setInterval(async () => {
       if (!qrSessionId.value) return
@@ -92,22 +106,14 @@ export function useQrCode() {
       } catch (error) {
         console.error('Error checking QR scan status:', error)
       }
-    }, 2000) // Check every 2 seconds
+    }, QR_CONFIG.pollingInterval)
     
-    // Auto stop polling after 5 minutes
-    setTimeout(() => {
-      stopPolling()
+    // Auto stop polling after max time
+    pollingTimeout.value = setTimeout(() => {
+      cleanup()
       // Regenerate QR if expired
       generateQrCode()
-    }, 5 * 60 * 1000)
-  }
-  
-  // Stop polling
-  const stopPolling = () => {
-    if (pollingInterval.value) {
-      clearInterval(pollingInterval.value)
-      pollingInterval.value = null
-    }
+    }, QR_CONFIG.maxPollingTime)
   }
   
   // Check QR scan status from backend
@@ -127,22 +133,15 @@ export function useQrCode() {
       const data = await response.json()
       
       // Handle different QR scan states
-      switch (data.status) {
-        case 'scanned':
-          handleQrScanned(data)
-          break
-        case 'confirmed':
-          handleQrConfirmed(data)
-          break
-        case 'cancelled':
-          handleQrCancelled(data)
-          break
-        case 'expired':
-          handleQrExpired(data)
-          break
-        default:
-          // Still waiting for scan
-          break
+      const statusHandlers = {
+        scanned: () => handleQrScanned(data),
+        confirmed: () => handleQrConfirmed(data),
+        cancelled: () => handleQrCancelled(data),
+        expired: () => handleQrExpired(data)
+      }
+      
+      if (statusHandlers[data.status]) {
+        statusHandlers[data.status]()
       }
       
     } catch (error) {
@@ -154,14 +153,13 @@ export function useQrCode() {
   // Handle QR code scanned (user opened mobile app)
   const handleQrScanned = (data) => {
     console.log('QR Code scanned:', data)
-    // Update UI to show "Scanned, waiting for confirmation"
     updateQrStatus('scanned')
   }
   
   // Handle QR login confirmed (user approved login)
   const handleQrConfirmed = (data) => {
     console.log('QR Login confirmed:', data)
-    stopPolling()
+    cleanup()
     
     // Process login data
     if (data.token) {
@@ -205,36 +203,24 @@ export function useQrCode() {
   // Update QR visual status
   const updateQrStatus = (status) => {
     const qrElement = document.getElementById('qrcode')
-    if (!qrElement) return
+    if (!qrElement || !statusConfig[status]) return
     
-    const statusMessages = {
-      scanned: 'QR đã được quét<br>Chờ xác nhận...',
-      confirmed: 'Đăng nhập thành công!<br>Đang chuyển hướng...',
-      cancelled: 'Đăng nhập bị hủy<br>Đang tạo mã mới...',
-      expired: 'QR đã hết hạn<br>Đang tạo mã mới...'
-    }
-    
-    const statusColors = {
-      scanned: '#FFA500',
-      confirmed: '#4CAF50', 
-      cancelled: '#FF6B6B',
-      expired: '#999999'
-    }
+    const { message, color } = statusConfig[status]
     
     qrElement.innerHTML = `
       <div style="
-        width: 180px;
-        height: 180px;
+        width: ${QR_CONFIG.width}px;
+        height: ${QR_CONFIG.height}px;
         display: flex;
         align-items: center;
         justify-content: center;
         background: #f5f5f5;
         font-size: 14px;
         text-align: center;
-        color: ${statusColors[status]};
+        color: ${color};
         font-weight: 500;
       ">
-        ${statusMessages[status]}
+        ${message}
       </div>
     `
   }
@@ -268,7 +254,7 @@ export function useQrCode() {
   
   // Cleanup on unmount
   onUnmounted(() => {
-    stopPolling()
+    cleanup()
   })
 
   onMounted(() => {
@@ -280,6 +266,6 @@ export function useQrCode() {
     qrSessionId,
     initQrCode,
     generateQrCode,
-    stopPolling
+    stopPolling: cleanup
   }
 }
