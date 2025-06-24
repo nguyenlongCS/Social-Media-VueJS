@@ -1,13 +1,13 @@
 <template>
   <div>
-    <RightNav />
+    <NavRight />
     <router-view />
   </div>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
-import RightNav from './components/RightNav.vue'
+import NavRight from './components/NavRight.vue'
 import { useTheme } from '@/composables/useTheme.js'
 
 const { initializeTheme } = useTheme()

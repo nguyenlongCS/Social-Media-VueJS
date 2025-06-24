@@ -1,4 +1,4 @@
-// composables/useError.js
+// composables/useError.js - Quản lý lỗi, loading, thông báo
 import { ref, computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage.js'
 

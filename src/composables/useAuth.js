@@ -1,7 +1,7 @@
 // composables/useAuth.js
 import { useRouter } from 'vue-router'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
-import { auth } from '@/components/firebase.js'
+import { auth } from '../../firebase.js'
 import { useAuthStore } from '@/stores/authStore'
 import { useError } from '@/composables/useError.js'
 import { useStorage } from '@/composables/useStorage.js'

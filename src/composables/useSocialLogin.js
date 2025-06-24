@@ -1,5 +1,5 @@
 // composables/useSocialLogin.js
-import { loginWithGoogle, loginWithFacebook } from '@/components/firebase.js'
+import { loginWithGoogle, loginWithFacebook } from '../../firebase.js'
 import { useRouter } from 'vue-router'
 import { useError } from '@/composables/useError.js'
 

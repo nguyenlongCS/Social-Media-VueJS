@@ -1,7 +1,7 @@
 // stores/authStore.js
 import { ref, computed, readonly } from 'vue'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
-import { auth } from '@/components/firebase.js'
+import { auth } from '../../firebase.js'
 
 // Global state
 const user = ref(null)

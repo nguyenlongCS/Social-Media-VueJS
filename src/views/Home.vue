@@ -1,13 +1,21 @@
 <template>
   <div>
     <div class="home-page">
-      <div class="container-left"></div>
-      <div class="container-main"></div>
-      <div class="container-right"></div>
+      <div class="container-left">
+        <HomeFeatures />
+      </div>
+      <div class="container-main">
+        <!-- <HomeFeed /> -->
+      </div>
+      <div class="container-right">
+        <!-- <HomeInteraction /> -->
+        <!-- Like, Emotion, Share, Comment -->
+      </div>
     </div>
-    <!-- <router-link to="/">Đăng xuất</router-link> -->
   </div>
 </template>
 <script setup>
-
+import HomeFeatures from '@/components/HomeFeatures.vue'
+// import HomeFeed from '@/components/HomeFeed.vue'
+// import HomeInteraction from '@/components/HomeInteraction.vue'
 </script>
