@@ -1,11 +1,16 @@
-// composables/useQrCode.js
+// composables/useQrCode.js - Chỉ xử lý tạo và quản lý mã QR
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useAPI } from '@/composables/useAPI.js'
+import { useNotification } from '@/composables/useNotification.js'
 
 export function useQrCode() {
   const qrCodeElement = ref(null)
   const qrSessionId = ref(null)
   const pollingInterval = ref(null)
   const pollingTimeout = ref(null)
+  
+  const { checkQrScanStatus } = useAPI()
+  const { handleLoginSuccess } = useNotification()
   
   // QR code configuration
   const QR_CONFIG = {
@@ -102,7 +107,20 @@ export function useQrCode() {
       if (!qrSessionId.value) return
       
       try {
-        await checkQrScanStatus()
+        const data = await checkQrScanStatus(qrSessionId.value)
+        
+        // Handle different QR scan states
+        const statusHandlers = {
+          scanned: () => handleQrScanned(data),
+          confirmed: () => handleQrConfirmed(data),
+          cancelled: () => handleQrCancelled(data),
+          expired: () => handleQrExpired(data)
+        }
+        
+        if (statusHandlers[data.status]) {
+          statusHandlers[data.status]()
+        }
+        
       } catch (error) {
         console.error('Error checking QR scan status:', error)
       }
@@ -114,40 +132,6 @@ export function useQrCode() {
       // Regenerate QR if expired
       generateQrCode()
     }, QR_CONFIG.maxPollingTime)
-  }
-  
-  // Check QR scan status from backend
-  const checkQrScanStatus = async () => {
-    try {
-      const response = await fetch(`/api/qr-login/status/${qrSessionId.value}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to check QR status')
-      }
-      
-      const data = await response.json()
-      
-      // Handle different QR scan states
-      const statusHandlers = {
-        scanned: () => handleQrScanned(data),
-        confirmed: () => handleQrConfirmed(data),
-        cancelled: () => handleQrCancelled(data),
-        expired: () => handleQrExpired(data)
-      }
-      
-      if (statusHandlers[data.status]) {
-        statusHandlers[data.status]()
-      }
-      
-    } catch (error) {
-      console.error('QR status check failed:', error)
-      // Continue polling on error
-    }
   }
   
   // Handle QR code scanned (user opened mobile app)
@@ -171,8 +155,11 @@ export function useQrCode() {
         localStorage.setItem('userData', JSON.stringify(data.user))
       }
       
-      // Redirect or emit login success event
-      handleLoginSuccess(data)
+      // Handle login success through notification composable
+      handleLoginSuccess({
+        ...data,
+        sessionId: qrSessionId.value
+      })
     }
     
     updateQrStatus('confirmed')
@@ -223,25 +210,6 @@ export function useQrCode() {
         ${message}
       </div>
     `
-  }
-  
-  // Handle successful login
-  const handleLoginSuccess = (data) => {
-    // Emit custom event for parent components to handle
-    const loginEvent = new CustomEvent('qr-login-success', {
-      detail: {
-        user: data.user,
-        token: data.token,
-        sessionId: qrSessionId.value
-      }
-    })
-    
-    window.dispatchEvent(loginEvent)
-    
-    // Optional: redirect to dashboard
-    setTimeout(() => {
-      window.location.href = data.redirectUrl || '/dashboard'
-    }, 1500)
   }
 
   // Khởi tạo QR code

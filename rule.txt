@@ -1,0 +1,142 @@
+# ARCHITECTURE & RULES
+
+## Architecture:
+
+### src/composables/
+- **useAPI.js**: Xử lý các API calls và giao tiếp với backend
+- **useAuth.js**: Xử lý logic xác thực người dùng (login, signup, forgot password, logout)
+- **useError.js**: Quản lý và xử lý lỗi, loading states, thông báo trong ứng dụng  
+- **useLanguage.js**: Quản lý và thay đổi ngôn ngữ giao diện (EN/VN)
+- **useNotification.js**: Xử lý thông báo và custom events trong ứng dụng
+- **useQrCode.js**: Tạo và quản lý mã QR cho chức năng đăng nhập
+- **useSocialLogin.js**: Đăng nhập bằng các mạng xã hội (Google, Facebook)
+- **useStorage.js**: Quản lý lưu trữ dữ liệu localStorage với các key chuẩn hóa
+- **useTheme.js**: Quản lý chủ đề (theme) màu sắc giao diện
+- **useValidation.js**: Kiểm tra và xác thực dữ liệu đầu vào của forms
+
+### src/components/
+- **HomeFeatures.vue**: Hiển thị các tính năng chính trên trang chủ
+- **LoginForm.vue**: Form đăng nhập/đăng ký cho người dùng
+- **LoginSocial.vue**: Đăng nhập bằng tài khoản mạng xã hội
+- **NavMid.vue**: Thanh điều hướng giữa của giao diện
+- **NavRight.vue**: Thanh điều hướng bên phải của giao diện
+
+### src/views/
+- **Home.vue**: Giao diện trang chủ
+- **Login.vue**: Giao diện trang đăng nhập
+
+### src/router/
+- **index.js**: Cấu hình và khởi tạo router (định tuyến) chính cho ứng dụng Vue
+- **qr-login.js**: Định nghĩa và xử lý các route liên quan đến chức năng đăng nhập bằng mã QR
+
+### src/stores/
+- **authStore.js**: Quản lý trạng thái xác thực người dùng (đăng nhập, đăng xuất, lưu thông tin tài khoản)
+
+### src/assets/
+- **main.css**: Định nghĩa các style (CSS) chung cho toàn bộ giao diện của ứng dụng
+
+### Root Files:
+- **App.vue**: Thành phần gốc (root) của ứng dụng Vue
+- **main.js**: Điểm khởi tạo và cấu hình chính của ứng dụng Vue
+- **firebase.js**: Thiết lập kết nối giữa ứng dụng và các dịch vụ của Firebase
+- **index.html**: File HTML chính
+
+---
+
+## CODE RULES:
+
+### 1. Single Responsibility Principle
+- **Mỗi composable chỉ thực hiện 1 chức năng duy nhất**
+- **Mỗi component chỉ đảm nhiệm 1 UI block cụ thể**
+- **Mỗi store chỉ quản lý 1 loại state**
+
+### 2. Composables Structure
+```javascript
+// Template cho composables
+export function useFeatureName() {
+  // 1. Imports và dependencies
+  // 2. Reactive state
+  // 3. Computed properties  
+  // 4. Methods/Functions
+  // 5. Lifecycle hooks (nếu có)
+  // 6. Return statement
+}
+```
+
+### 3. Error Handling
+- **Tất cả async operations phải sử dụng `withErrorHandling` từ useError**
+- **Không được handle error trực tiếp trong components**
+- **Sử dụng centralized error messages từ useError**
+
+### 4. State Management
+- **Global state chỉ sử dụng trong stores**
+- **Local state sử dụng ref/reactive trong composables**
+- **Storage state sử dụng useStorage với keys chuẩn hóa**
+
+### 5. API Integration
+- **Tất cả API calls phải đi qua useAPI composable**
+- **Không được gọi fetch/axios trực tiếp trong components**
+- **Sử dụng consistent error handling cho API calls**
+
+---
+
+## LOGIC RULES:
+
+### 1. Authentication Flow
+```
+Login → useAuth → useError → useStorage → Router
+Social Login → useSocialLogin → useAuth → Router  
+QR Login → useQrCode → useAPI → useNotification → Router
+```
+
+### 2. Data Flow
+```
+Component → Composable → Store/API → Backend
+Component ← Composable ← Store/API ← Backend
+```
+
+### 3. Error Flow
+```
+Error → useError → Global State → Component Display
+```
+
+### 4. Storage Flow
+```
+Data → useStorage → localStorage → Reactive State
+```
+
+---
+
+## OPERATION RULES:
+
+### 1. Development Workflow
+- **Không thay đổi giao diện khi chưa được yêu cầu**
+- **Không thêm/bớt chức năng khi chưa được yêu cầu**
+- **Không thay đổi logic khi chưa được yêu cầu**
+- **Không xóa comments hiện có**
+
+### 2. Code Quality
+- **Sử dụng TypeScript cho type safety (nếu có)**
+- **Tuân thủ Vue 3 Composition API patterns**
+- **Consistent naming conventions (camelCase)**
+- **Proper component lifecycle management**
+
+### 3. Performance
+- **Lazy loading cho routes và components lớn**
+- **Debounce cho user inputs**
+- **Cleanup intervals/timeouts trong onUnmounted**
+- **Optimize reactive dependencies**
+
+### 4. Security
+- **Encrypt passwords trước khi lưu localStorage**
+- **Validate tất cả user inputs**
+- **Sanitize data trước khi display**
+- **Proper authentication state management**
+
+---
+
+## TESTING STRATEGY:
+- **Unit tests cho từng composable**
+- **Integration tests cho authentication flow**
+- **E2E tests cho critical user journeys**
+- **Mock external dependencies (Firebase, APIs)**

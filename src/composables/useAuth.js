@@ -1,11 +1,10 @@
-// composables/useAuth.js
+// composables/useAuth.js - Chỉ xử lý logic xác thực người dùng
 import { useRouter } from 'vue-router'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '../../firebase.js'
 import { useAuthStore } from '@/stores/authStore'
 import { useError } from '@/composables/useError.js'
 import { useStorage } from '@/composables/useStorage.js'
-import { useSocialLogin } from '@/composables/useSocialLogin.js'
 
 export function useAuth() {
   const router = useRouter()
@@ -21,9 +20,6 @@ export function useAuth() {
     withErrorHandling,
     getLoadingMessage 
   } = useError()
-  
-  // Import social login handlers from dedicated composable
-  const { handleGoogleLogin, handleFacebookLogin } = useSocialLogin()
 
   // Hàm mã hóa mật khẩu đơn giản (Base64)
   const encryptPassword = (password) => {
@@ -104,8 +100,6 @@ export function useAuth() {
     encryptPassword,
     decryptPassword,
     handleLogin,
-    handleGoogleLogin, // Reuse from useSocialLogin
-    handleFacebookLogin, // Reuse from useSocialLogin
     handleSignup,
     handleForgotPassword,
     handleLogout,
