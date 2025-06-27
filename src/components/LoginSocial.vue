@@ -4,7 +4,12 @@
             <div class="qr-title">{{ t.qrTitle }}</div>
             <div class="qr-code">
                 <div class="qr-pattern" id="qrcode">
-                    <!-- QR Code sẽ được generate tại đây -->
+                    <!-- QR Code placeholder - chức năng tạm thời bị disable -->
+                    <div class="qr-placeholder">
+                        📱<br>
+                        QR Login<br>
+                        Coming Soon
+                    </div>
                 </div>
             </div>
         </div>
@@ -30,13 +35,11 @@
 </template>
 
 <script setup>
-import { useLanguage } from '@/composables/useLanguage.js'
-import { useQrCode } from '@/composables/useQrCode.js'
-import { useSocialLogin } from '@/composables/useSocialLogin.js'
+import { useSettings } from '@/composables/useSettings.js'
+import { useAuth } from '@/composables/useAuth.js'
 
-const { t } = useLanguage()
-const { qrCodeElement, initQrCode } = useQrCode()
-const { handleGoogleLogin, handleFacebookLogin } = useSocialLogin()
+const { t } = useSettings()
+const { handleGoogleLogin, handleFacebookLogin } = useAuth()
 </script>
 
 <style scoped>
@@ -82,6 +85,15 @@ const { handleGoogleLogin, handleFacebookLogin } = useSocialLogin()
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* QR placeholder styling */
+.qr-placeholder {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 500;
 }
 
 /* Social Login */

@@ -10,16 +10,12 @@
 </template>
 
 <script setup>
-import { useTheme } from '@/composables/useTheme.js'
-import { useLanguage } from '@/composables/useLanguage.js'
+import { useSettings } from '@/composables/useSettings.js'
 import { useAuth } from '@/composables/useAuth.js'
 
-// Sử dụng unified auth
+// Updated imports - hợp nhất từ useTheme + useLanguage + useAuth
+const { changeThemeColor, currentLanguage, toggleLanguage, t, translate } = useSettings()
 const { isLoggedIn, handleLogout } = useAuth()
-
-// Sử dụng composables
-const { changeThemeColor } = useTheme()
-const { currentLanguage, toggleLanguage, t, translate } = useLanguage()
 </script>
 
 <style scoped>

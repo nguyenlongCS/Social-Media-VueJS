@@ -25,12 +25,12 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useTheme } from '@/composables/useTheme.js'
-import { useStorage } from '@/composables/useStorage.js'
+import { useSettings } from '@/composables/useSettings.js'
 
 const router = useRouter()
 const route = useRoute()
-const { getItem, setItem } = useStorage()
+// Updated import - từ useStorage sang useSettings
+const { getItem, setItem } = useSettings()
 
 // Storage key cho active nav item
 const NAV_ACTIVE_KEY = 'activeNavItem'

@@ -8,9 +8,10 @@
 <script setup>
 import { onMounted } from 'vue'
 import NavRight from './components/NavRight.vue'
-import { useTheme } from '@/composables/useTheme.js'
+import { useSettings } from '@/composables/useSettings.js'
 
-const { initializeTheme } = useTheme()
+// Updated import - từ useTheme sang useSettings
+const { initializeTheme } = useSettings()
 
 onMounted(() => {
   // Khởi tạo theme khi ứng dụng bắt đầu

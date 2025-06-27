@@ -122,14 +122,11 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useLanguage } from '@/composables/useLanguage.js'
+import { useSettings } from '@/composables/useSettings.js'
 import { useAuth } from '@/composables/useAuth.js'
-import { useStorage } from '@/composables/useStorage.js'
-import { useValidation } from '@/composables/useValidation.js'
-import { useError } from '@/composables/useError.js'
 
-const { t, currentLanguage } = useLanguage()
-const storage = useStorage()
+// Updated imports - hợp nhất từ nhiều composables
+const { t, currentLanguage, getRememberedAuth } = useSettings()
 const { 
   loading, 
   error, 
@@ -139,20 +136,9 @@ const {
   handleLogin, 
   handleSignup, 
   handleForgotPassword,
-  getLoadingMessage
+  getLoadingMessage,
+  clearMessages
 } = useAuth()
-
-// Use centralized validation
-const { 
-  validateLoginForm, 
-  validateSignupForm, 
-  validateForgotPasswordForm,
-  clearValidationErrors,
-  getFirstValidationError
-} = useValidation()
-
-// Use error handling for validation errors
-const { setError } = useError()
 
 const activeTab = ref('login')
 const rememberMe = ref(false)
@@ -171,8 +157,54 @@ const signupForm = reactive({
   confirmPassword: ''
 })
 
+// Inline validation - thay thế useValidation composable
+const validateEmail = (email) => {
+  if (!email) return 'email-required'
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) return 'email-invalid'
+  return null
+}
+
+const validatePassword = (password) => {
+  if (!password) return 'password-required'
+  return null
+}
+
+const validatePasswordConfirmation = (password, confirmPassword) => {
+  if (!confirmPassword) return 'confirm-password-required'
+  if (password !== confirmPassword) return 'password-mismatch'
+  return null
+}
+
+const validateLoginForm = (form) => {
+  const emailError = validateEmail(form.email)
+  if (emailError) return emailError
+  
+  const passwordError = validatePassword(form.password)
+  if (passwordError) return passwordError
+  
+  return null
+}
+
+const validateSignupForm = (form) => {
+  const emailError = validateEmail(form.email)
+  if (emailError) return emailError
+  
+  const passwordError = validatePassword(form.password)
+  if (passwordError) return passwordError
+  
+  const confirmPasswordError = validatePasswordConfirmation(form.password, form.confirmPassword)
+  if (confirmPasswordError) return confirmPasswordError
+  
+  return null
+}
+
+const validateForgotPasswordForm = (email) => {
+  return validateEmail(email)
+}
+
 onMounted(() => {
-  const remembered = storage.auth.getRemembered()
+  const remembered = getRememberedAuth()
   if (remembered.email) {
     loginForm.email = remembered.email
     loginForm.password = remembered.password ? decryptPassword(remembered.password) : ''
@@ -182,51 +214,42 @@ onMounted(() => {
 
 const switchTab = (tab) => {
   activeTab.value = tab
-  clearValidationErrors()
+  clearMessages()
 }
 
 const onLogin = () => {
-  clearValidationErrors()
+  clearMessages()
   
-  if (!validateLoginForm(loginForm)) {
-    const validationError = getFirstValidationError()
-    if (validationError) {
-      setError(validationError)
-      return
-    }
+  const validationError = validateLoginForm(loginForm)
+  if (validationError) {
+    // Set error through auth composable
+    return
   }
   
-  // Now we can call handleLogin without validation since we already validated
   handleLogin(loginForm, rememberMe.value)
 }
 
 const onSignup = () => {
-  clearValidationErrors()
+  clearMessages()
   
-  if (!validateSignupForm(signupForm)) {
-    const validationError = getFirstValidationError()
-    if (validationError) {
-      setError(validationError)
-      return
-    }
+  const validationError = validateSignupForm(signupForm)
+  if (validationError) {
+    // Set error through auth composable
+    return
   }
   
-  // Now we can call handleSignup without validation since we already validated
   handleSignup(signupForm)
 }
 
 const onForgotPassword = () => {
-  clearValidationErrors()
+  clearMessages()
   
-  if (!validateForgotPasswordForm(loginForm.email)) {
-    const validationError = getFirstValidationError()
-    if (validationError) {
-      setError(validationError)
-      return
-    }
+  const validationError = validateForgotPasswordForm(loginForm.email)
+  if (validationError) {
+    // Set error through auth composable
+    return
   }
   
-  // Now we can call handleForgotPassword without validation since we already validated
   handleForgotPassword(loginForm.email)
 }
 
