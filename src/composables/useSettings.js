@@ -14,9 +14,7 @@ export const STORAGE_KEYS = {
 const DEFAULTS = {
   [STORAGE_KEYS.LANGUAGE]: 'EN',
   [STORAGE_KEYS.THEME]: '#ffeb7c',
-  [STORAGE_KEYS.THEME_RGB]: '255, 235, 124',
-  [STORAGE_KEYS.REMEMBERED_EMAIL]: null,
-  [STORAGE_KEYS.REMEMBERED_PASSWORD]: null
+  [STORAGE_KEYS.THEME_RGB]: '255, 235, 124'
 }
 
 // Translations - từ useLanguage.js
@@ -171,7 +169,7 @@ export const useSettings = () => {
     setItem(STORAGE_KEYS.THEME_RGB, rgb)
   }
 
-  // Auth storage methods - từ useStorage.js
+  // Auth storage methods - sử dụng generic storage operations
   const getRememberedAuth = () => ({
     email: getItem(STORAGE_KEYS.REMEMBERED_EMAIL),
     password: getItem(STORAGE_KEYS.REMEMBERED_PASSWORD)

@@ -1,54 +1,27 @@
 <template>
   <div id="container-form-login">
     <div class="tab-buttons-login">
-      <button 
-        class="tab-button" 
-        :class="{ active: activeTab === 'login' }"
-        @click="switchTab('login')"
-      >
+      <button class="tab-button" :class="{ active: activeTab === 'login' }" @click="switchTab('login')">
         {{ t.loginTab }}
       </button>
-      <button 
-        class="tab-button" 
-        :class="{ active: activeTab === 'signup' }"
-        @click="switchTab('signup')"
-      >
+      <button class="tab-button" :class="{ active: activeTab === 'signup' }" @click="switchTab('signup')">
         {{ t.signupTab }}
       </button>
     </div>
-    
+
     <div class="form-container">
-      <form 
-        v-show="activeTab === 'login'"
-        class="form" 
-        @submit.prevent="onLogin"
-      >
+      <form v-show="activeTab === 'login'" class="form" @submit.prevent="onLogin">
         <div class="input-group">
-          <input 
-            type="email" 
-            class="input-field" 
-            :placeholder="t.emailPlaceholder" 
-            v-model="loginForm.email"
-            required
-          >
+          <input type="email" class="input-field" :placeholder="t.emailPlaceholder" v-model="loginForm.email" required>
           <div class="password-input-container">
-            <input 
-              :type="showPassword ? 'text' : 'password'" 
-              class="input-field" 
-              :placeholder="t.passwordPlaceholder" 
-              v-model="loginForm.password"
-              required
-            >
-            <button 
-              type="button" 
-              class="toggle-password" 
-              @click="showPassword = !showPassword"
-            >
+            <input :type="showPassword ? 'text' : 'password'" class="input-field" :placeholder="t.passwordPlaceholder"
+              v-model="loginForm.password" required>
+            <button type="button" class="toggle-password" @click="showPassword = !showPassword">
               {{ showPassword ? '🙈' : '👁️' }}
             </button>
           </div>
         </div>
-        
+
         <div class="form-options">
           <label class="remember-me">
             <input type="checkbox" class="checkbox" v-model="rememberMe">
@@ -56,64 +29,36 @@
           </label>
           <a href="#" class="forgot-password" @click.prevent="onForgotPassword">{{ t.forgotPassword }}</a>
         </div>
-        
+
         <button type="submit" class="submit-button" :disabled="loading">
           {{ loading ? (currentLanguage === 'EN' ? 'Logging in...' : 'Đang đăng nhập...') : t.loginBtn }}
         </button>
       </form>
 
-      <form 
-        v-show="activeTab === 'signup'"
-        class="form"
-        @submit.prevent="onSignup"
-      >
+      <form v-show="activeTab === 'signup'" class="form" @submit.prevent="onSignup">
         <div class="input-group">
-          <input 
-            type="email" 
-            class="input-field" 
-            :placeholder="t.emailPlaceholder" 
-            v-model="signupForm.email"
-            required
-          >
+          <input type="email" class="input-field" :placeholder="t.emailPlaceholder" v-model="signupForm.email" required>
           <div class="password-input-container">
-            <input 
-              :type="showPasswordSignup ? 'text' : 'password'" 
-              class="input-field" 
-              :placeholder="t.passwordPlaceholder" 
-              v-model="signupForm.password"
-              required
-            >
-            <button 
-              type="button" 
-              class="toggle-password" 
-              @click="showPasswordSignup = !showPasswordSignup"
-            >
+            <input :type="showPasswordSignup ? 'text' : 'password'" class="input-field"
+              :placeholder="t.passwordPlaceholder" v-model="signupForm.password" required>
+            <button type="button" class="toggle-password" @click="showPasswordSignup = !showPasswordSignup">
               {{ showPasswordSignup ? '🙈' : '👁️' }}
             </button>
           </div>
           <div class="password-input-container">
-            <input 
-              :type="showConfirmPassword ? 'text' : 'password'" 
-              class="input-field" 
-              :placeholder="t.confirmPasswordPlaceholder" 
-              v-model="signupForm.confirmPassword"
-              required
-            >
-            <button 
-              type="button" 
-              class="toggle-password" 
-              @click="showConfirmPassword = !showConfirmPassword"
-            >
+            <input :type="showConfirmPassword ? 'text' : 'password'" class="input-field"
+              :placeholder="t.confirmPasswordPlaceholder" v-model="signupForm.confirmPassword" required>
+            <button type="button" class="toggle-password" @click="showConfirmPassword = !showConfirmPassword">
               {{ showConfirmPassword ? '🙈' : '👁️' }}
             </button>
           </div>
         </div>
-        
+
         <button type="submit" class="submit-button" :disabled="loading">
           {{ loading ? (currentLanguage === 'EN' ? 'Signing up...' : 'Đang đăng ký...') : t.signupBtn }}
         </button>
       </form>
-      
+
       <div v-if="error" class="error-message">{{ error }}</div>
       <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
     </div>
@@ -124,21 +69,30 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useSettings } from '@/composables/useSettings.js'
 import { useAuth } from '@/composables/useAuth.js'
+import { useValidation } from '@/composables/useValidation.js'
 
 // Updated imports - hợp nhất từ nhiều composables
 const { t, currentLanguage, getRememberedAuth } = useSettings()
-const { 
-  loading, 
-  error, 
-  successMessage, 
-  encryptPassword, 
-  decryptPassword, 
-  handleLogin, 
-  handleSignup, 
+const {
+  loading,
+  error,
+  successMessage,
+  encryptPassword,
+  decryptPassword,
+  handleLogin,
+  handleSignup,
   handleForgotPassword,
   getLoadingMessage,
-  clearMessages
+  clearMessages,
+  handleError
 } = useAuth()
+
+// Use validation composable - thay thế inline validation
+const {
+  validateLoginForm,
+  validateSignupForm,
+  validateForgotPasswordForm
+} = useValidation()
 
 const activeTab = ref('login')
 const rememberMe = ref(false)
@@ -157,52 +111,6 @@ const signupForm = reactive({
   confirmPassword: ''
 })
 
-// Inline validation - thay thế useValidation composable
-const validateEmail = (email) => {
-  if (!email) return 'email-required'
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(email)) return 'email-invalid'
-  return null
-}
-
-const validatePassword = (password) => {
-  if (!password) return 'password-required'
-  return null
-}
-
-const validatePasswordConfirmation = (password, confirmPassword) => {
-  if (!confirmPassword) return 'confirm-password-required'
-  if (password !== confirmPassword) return 'password-mismatch'
-  return null
-}
-
-const validateLoginForm = (form) => {
-  const emailError = validateEmail(form.email)
-  if (emailError) return emailError
-  
-  const passwordError = validatePassword(form.password)
-  if (passwordError) return passwordError
-  
-  return null
-}
-
-const validateSignupForm = (form) => {
-  const emailError = validateEmail(form.email)
-  if (emailError) return emailError
-  
-  const passwordError = validatePassword(form.password)
-  if (passwordError) return passwordError
-  
-  const confirmPasswordError = validatePasswordConfirmation(form.password, form.confirmPassword)
-  if (confirmPasswordError) return confirmPasswordError
-  
-  return null
-}
-
-const validateForgotPasswordForm = (email) => {
-  return validateEmail(email)
-}
-
 onMounted(() => {
   const remembered = getRememberedAuth()
   if (remembered.email) {
@@ -219,37 +127,37 @@ const switchTab = (tab) => {
 
 const onLogin = () => {
   clearMessages()
-  
+
   const validationError = validateLoginForm(loginForm)
   if (validationError) {
-    // Set error through auth composable
+    handleError(validationError)
     return
   }
-  
+
   handleLogin(loginForm, rememberMe.value)
 }
 
 const onSignup = () => {
   clearMessages()
-  
+
   const validationError = validateSignupForm(signupForm)
   if (validationError) {
-    // Set error through auth composable
+    handleError(validationError)
     return
   }
-  
+
   handleSignup(signupForm)
 }
 
 const onForgotPassword = () => {
   clearMessages()
-  
+
   const validationError = validateForgotPasswordForm(loginForm.email)
   if (validationError) {
-    // Set error through auth composable
+    handleError(validationError)
     return
   }
-  
+
   handleForgotPassword(loginForm.email)
 }
 

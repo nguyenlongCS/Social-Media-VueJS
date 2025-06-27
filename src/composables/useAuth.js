@@ -85,10 +85,27 @@ export function useAuth() {
     }
   }
 
-  // Error handling methods - hợp nhất từ useError.js
-  const setError = (errorCode, fallbackKey = 'unknown-error') => {
+  // Unified error handling method - merge setError và handleAuthError
+  const handleError = (error, fallbackKey = 'unknown-error') => {
     const errorMessages = messages[currentLanguage.value].errors
-    globalError.value = errorMessages[errorCode] || errorMessages[fallbackKey]
+    
+    // Handle Firebase auth errors
+    if (error.code) {
+      globalError.value = errorMessages[error.code] || errorMessages[fallbackKey]
+    } else if (error.message) {
+      // Handle network errors or other non-Firebase errors
+      if (error.message.includes('network')) {
+        globalError.value = errorMessages['network-error']
+      } else {
+        globalError.value = errorMessages[fallbackKey]
+      }
+    } else if (typeof error === 'string') {
+      // Handle validation errors
+      globalError.value = errorMessages[error] || errorMessages[fallbackKey]
+    } else {
+      globalError.value = errorMessages[fallbackKey]
+    }
+    
     globalSuccessMessage.value = ''
   }
 
@@ -114,22 +131,6 @@ export function useAuth() {
     isLoading.value = false
   }
 
-  // Handle Firebase auth errors specifically
-  const handleAuthError = (error, fallbackKey) => {
-    if (error.code) {
-      setError(error.code, fallbackKey)
-    } else if (error.message) {
-      // Handle network errors or other non-Firebase errors
-      if (error.message.includes('network')) {
-        setError('network-error')
-      } else {
-        setError(fallbackKey)
-      }
-    } else {
-      setError(fallbackKey)
-    }
-  }
-
   // Async wrapper for operations with consistent error handling
   const withErrorHandling = async (operation, loadingKey, successKey, fallbackErrorKey) => {
     try {
@@ -145,7 +146,7 @@ export function useAuth() {
       return result
     } catch (error) {
       console.error('Operation failed:', error)
-      handleAuthError(error, fallbackErrorKey)
+      handleError(error, fallbackErrorKey)
       throw error // Re-throw to allow component-level handling if needed
     } finally {
       clearLoading()
@@ -279,6 +280,7 @@ export function useAuth() {
     
     // Utility methods
     clearMessages,
-    getLoadingMessage
+    getLoadingMessage,
+    handleError // Export unified error handler for external use
   }
 }

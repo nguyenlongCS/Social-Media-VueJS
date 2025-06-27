@@ -6,7 +6,7 @@
                 <div class="qr-pattern" id="qrcode">
                     <!-- QR Code placeholder - chức năng tạm thời bị disable -->
                     <div class="qr-placeholder">
-                        📱<br>
+                        <br>
                         QR Login<br>
                         Coming Soon
                     </div>
