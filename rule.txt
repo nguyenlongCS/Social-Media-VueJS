@@ -1,142 +1,187 @@
-# ARCHITECTURE & RULES
+# COZY-VUE PROJECT ARCHITECTURE & RULES
 
-## Architecture:
-
-### src/composables/
-- **useAPI.js**: Xử lý các API calls và giao tiếp với backend
-- **useAuth.js**: Xử lý logic xác thực người dùng (login, signup, forgot password, logout)
-- **useError.js**: Quản lý và xử lý lỗi, loading states, thông báo trong ứng dụng  
-- **useLanguage.js**: Quản lý và thay đổi ngôn ngữ giao diện (EN/VN)
-- **useNotification.js**: Xử lý thông báo và custom events trong ứng dụng
-- **useQrCode.js**: Tạo và quản lý mã QR cho chức năng đăng nhập
-- **useSocialLogin.js**: Đăng nhập bằng các mạng xã hội (Google, Facebook)
-- **useStorage.js**: Quản lý lưu trữ dữ liệu localStorage với các key chuẩn hóa
-- **useTheme.js**: Quản lý chủ đề (theme) màu sắc giao diện
-- **useValidation.js**: Kiểm tra và xác thực dữ liệu đầu vào của forms
-
-### src/components/
-- **HomeFeatures.vue**: Hiển thị các tính năng chính trên trang chủ
-- **LoginForm.vue**: Form đăng nhập/đăng ký cho người dùng
-- **LoginSocial.vue**: Đăng nhập bằng tài khoản mạng xã hội
-- **NavMid.vue**: Thanh điều hướng giữa của giao diện
-- **NavRight.vue**: Thanh điều hướng bên phải của giao diện
-
-### src/views/
-- **Home.vue**: Giao diện trang chủ
-- **Login.vue**: Giao diện trang đăng nhập
-
-### src/router/
-- **index.js**: Cấu hình và khởi tạo router (định tuyến) chính cho ứng dụng Vue
-- **qr-login.js**: Định nghĩa và xử lý các route liên quan đến chức năng đăng nhập bằng mã QR
-
-### src/stores/
-- **authStore.js**: Quản lý trạng thái xác thực người dùng (đăng nhập, đăng xuất, lưu thông tin tài khoản)
-
-### src/assets/
-- **main.css**: Định nghĩa các style (CSS) chung cho toàn bộ giao diện của ứng dụng
-
-### Root Files:
-- **App.vue**: Thành phần gốc (root) của ứng dụng Vue
-- **main.js**: Điểm khởi tạo và cấu hình chính của ứng dụng Vue
-- **firebase.js**: Thiết lập kết nối giữa ứng dụng và các dịch vụ của Firebase
-- **index.html**: File HTML chính
+## PROJECT OVERVIEW
+- **Type**: Vue 3 Social Media Application with Firebase Integration
+- **Mobile Ready**: Capacitor Android support
+- **State Management**: Composition API with centralized stores
+- **Authentication**: Firebase Auth with social login support
 
 ---
 
-## CODE RULES:
+## ARCHITECTURE
+
+### src/composables/
+- **useAuth.js**: Quản lý xác thực người dùng (login, signup, forgot password, logout, social login)
+- **useSettings.js**: Hợp nhất quản lý theme, ngôn ngữ, storage (localStorage operations)
+- **useValidation.js**: Kiểm tra và xác thực dữ liệu đầu vào của forms
+
+### src/components/
+- **HomeFeatures.vue**: Hiển thị các tính năng chính 
+- **LoginForm.vue**: Form đăng nhập/đăng ký với tab switching
+- **LoginSocial.vue**: Đăng nhập bằng mạng xã hội + QR code placeholder
+- **NavMid.vue**: Thanh điều hướng giữa với 5 navigation items
+- **NavRight.vue**: Thanh điều hướng phải (theme switcher, language, logout)
+
+### src/views/
+- **Home.vue**: Giao diện trang chủ với layout 3 cột
+- **Login.vue**: Giao diện trang đăng nhập với layout 3 cột
+
+### src/router/
+- **index.js**: Cấu hình router chính với route guards (requiresAuth, requiresGuest)
+
+### src/stores/
+- **authStore.js**: Quản lý trạng thái xác thực với Firebase onAuthStateChanged
+
+### src/assets/
+- **main.css**: CSS variables và responsive grid layout (3-column design)
+
+### Root Files:
+- **App.vue**: Root component với NavRight và router-view
+- **main.js**: App initialization với router và CSS
+- **firebase.js**: Firebase configuration và auth helpers
+- **index.html**: HTML entry point
+- **capacitor.config.json**: Capacitor mobile app configuration
+
+---
+
+## CODE RULES
 
 ### 1. Single Responsibility Principle
-- **Mỗi composable chỉ thực hiện 1 chức năng duy nhất**
-- **Mỗi component chỉ đảm nhiệm 1 UI block cụ thể**
-- **Mỗi store chỉ quản lý 1 loại state**
+- **Mỗi composable chỉ thực hiện 1 chức năng domain cụ thể**
+- **Mỗi component chỉ đảm nhiệm 1 UI block**
+- **Hợp nhất các composables có chức năng liên quan (Settings = Theme + Language + Storage)**
 
 ### 2. Composables Structure
 ```javascript
 // Template cho composables
 export function useFeatureName() {
   // 1. Imports và dependencies
-  // 2. Reactive state
-  // 3. Computed properties  
+  // 2. Global state initialization (nếu cần)
+  // 3. Reactive state và computed
   // 4. Methods/Functions
-  // 5. Lifecycle hooks (nếu có)
-  // 6. Return statement
+  // 5. Lifecycle hooks (onMounted nếu cần)
+  // 6. Return object với grouped methods
 }
 ```
 
-### 3. Error Handling
-- **Tất cả async operations phải sử dụng `withErrorHandling` từ useError**
-- **Không được handle error trực tiếp trong components**
-- **Sử dụng centralized error messages từ useError**
+### 3. Error Handling Pattern
+- **Centralized error messages trong useAuth với i18n support**
+- **withErrorHandling wrapper cho tất cả async operations**
+- **Consistent error display qua global state**
+- **Loading states được manage centrally**
 
-### 4. State Management
-- **Global state chỉ sử dụng trong stores**
-- **Local state sử dụng ref/reactive trong composables**
-- **Storage state sử dụng useStorage với keys chuẩn hóa**
+### 4. State Management Architecture
+- **Global state: Firebase auth state qua authStore**
+- **Settings state: localStorage persistence qua useSettings**
+- **Component state: local reactive state trong composables**
+- **No direct localStorage access từ components**
 
-### 5. API Integration
-- **Tất cả API calls phải đi qua useAPI composable**
-- **Không được gọi fetch/axios trực tiếp trong components**
-- **Sử dụng consistent error handling cho API calls**
+### 5. Component Communication
+- **Props down, events up cho parent-child**
+- **Composables cho cross-component logic sharing**
+- **Router để communicate qua URL state**
+- **Global stores chỉ cho authentication state**
 
 ---
 
-## LOGIC RULES:
+## LOGIC RULES
 
 ### 1. Authentication Flow
 ```
-Login → useAuth → useError → useStorage → Router
-Social Login → useSocialLogin → useAuth → Router  
-QR Login → useQrCode → useAPI → useNotification → Router
+Login/Signup → useAuth → Firebase Auth → authStore → Router Navigation
+Social Login → Firebase Social Providers → authStore → Auto redirect
+Logout → authStore.logout → Firebase signOut → Router redirect
+Route Guards → authStore.isLoggedIn → Redirect logic
 ```
 
-### 2. Data Flow
+### 2. Settings Flow
 ```
-Component → Composable → Store/API → Backend
-Component ← Composable ← Store/API ← Backend
-```
-
-### 3. Error Flow
-```
-Error → useError → Global State → Component Display
+Theme Change → useSettings.changeThemeColor → CSS Variables + localStorage
+Language Toggle → useSettings.toggleLanguage → Reactive translations + localStorage
+Storage Operations → useSettings generic methods → localStorage with error handling
 ```
 
-### 4. Storage Flow
+### 3. Validation Flow
 ```
-Data → useStorage → localStorage → Reactive State
+Form Submit → useValidation methods → Error return → useAuth.handleError → Display
+Email/Password validation → Consistent error keys → i18n error messages
+```
+
+### 4. Data Persistence Flow
+```
+User Preferences → useSettings → localStorage → Page refresh → Auto restore
+Auth State → Firebase → authStore → Browser refresh → Firebase SDK restore
+Form Remember → Encrypted localStorage → Page load → Auto populate
+```
+
+### 5. Mobile App Flow
+```
+Vue App → Capacitor → Android WebView → Native device features
+Build process → npm run build → Capacitor sync → Android Studio
 ```
 
 ---
 
-## OPERATION RULES:
+## OPERATION RULES
 
 ### 1. Development Workflow
 - **Không thay đổi giao diện khi chưa được yêu cầu**
 - **Không thêm/bớt chức năng khi chưa được yêu cầu**
-- **Không thay đổi logic khi chưa được yêu cầu**
+- **Chỉ giữ lại các logic cần thiết**
+- **Loại bỏ logic/code trùng lặp, dư thừa (optimization allowed)**
 - **Không xóa comments hiện có**
+- **Maintain 3-column responsive layout pattern**
 
-### 2. Code Quality
-- **Sử dụng TypeScript cho type safety (nếu có)**
-- **Tuân thủ Vue 3 Composition API patterns**
-- **Consistent naming conventions (camelCase)**
-- **Proper component lifecycle management**
+### 2. Code Quality Standards
+- **Vue 3 Composition API pattern tuân thủ strict**
+- **TypeScript ready structure (có thể upgrade)**
+- **Consistent naming: camelCase cho tất cả**
+- **Error boundaries và graceful degradation**
+- **Mobile-first responsive design**
 
-### 3. Performance
-- **Lazy loading cho routes và components lớn**
-- **Debounce cho user inputs**
-- **Cleanup intervals/timeouts trong onUnmounted**
+### 3. Performance Rules
+- **Component lazy loading cho large views**
+- **Composable method debouncing cho user inputs**
+- **Cleanup timers/listeners trong onUnmounted**
 - **Optimize reactive dependencies**
+- **Firebase connection pooling**
 
-### 4. Security
-- **Encrypt passwords trước khi lưu localStorage**
-- **Validate tất cả user inputs**
-- **Sanitize data trước khi display**
-- **Proper authentication state management**
+### 4. Security Requirements
+- **Password encryption trước localStorage (simple Base64)**
+- **Input validation qua useValidation**
+- **Firebase security rules compliance**
+- **No sensitive data trong client-side storage**
+- **HTTPS only cho production**
+
+### 5. Mobile Development
+- **Capacitor Android build support**
+- **Touch-friendly UI components**
+- **Responsive breakpoints trong CSS**
+- **Native device API ready structure**
 
 ---
 
-## TESTING STRATEGY:
-- **Unit tests cho từng composable**
-- **Integration tests cho authentication flow**
-- **E2E tests cho critical user journeys**
-- **Mock external dependencies (Firebase, APIs)**
+## TESTING STRATEGY
+- **Unit tests cho từng composable method**
+- **Component testing cho critical UI flows**
+- **Firebase auth integration tests**
+- **Mobile responsive testing across devices**
+- **E2E authentication journey testing**
+
+---
+
+## DEPLOYMENT RULES
+- **Web deployment: Static hosting (Vercel/Netlify)**
+- **Mobile deployment: Android APK via Capacitor**
+- **Environment variables cho Firebase config**
+- **Build optimization với Vite**
+- **Progressive Web App capabilities**
+
+---
+
+## MAINTENANCE GUIDELINES
+- **Regular dependency updates (monthly)**
+- **Firebase SDK version compatibility**
+- **Vue 3 ecosystem alignment**
+- **Mobile platform updates (Android)**
+- **Security patch monitoring**
