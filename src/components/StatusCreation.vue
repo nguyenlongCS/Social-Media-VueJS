@@ -7,7 +7,7 @@
     </div>
     
     <!-- Upload Section -->
-    <div class="upload-area" @click="triggerFileInput">
+    <div class="upload-area" @click="triggerFileInput" :class="{ disabled: loading }">
       <!-- Empty State -->
       <div v-if="!selectedFile" class="upload-empty">
         <div class="plus-icon">+</div>
@@ -28,7 +28,7 @@
     
     <!-- Controls Section -->
     <div class="controls">
-      <button class="control-btn close-btn" @click="cancelStatus">×</button>
+      <button class="control-btn close-btn" @click="cancelStatus" :disabled="loading">×</button>
       
       <div class="input-wrapper">
         <input 
@@ -36,18 +36,24 @@
           v-model="statusCaption" 
           :placeholder="t.statusPlaceholder" 
           class="caption-input"
+          :disabled="loading"
         >
       </div>
       
       <button 
         class="control-btn post-btn" 
         @click="postStatus" 
-        :disabled="!canPost" 
-        :class="{ disabled: !canPost }"
+        :disabled="!canPost || loading" 
+        :class="{ disabled: !canPost || loading }"
       >
-        ➤
+        <span v-if="loading">⏳</span>
+        <span v-else>➤</span>
       </button>
     </div>
+
+    <!-- Error/Success Messages -->
+    <div v-if="error" class="error-message">{{ error }}</div>
+    <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
   </div>
 </template>
 
@@ -55,18 +61,22 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSettings } from '@/composables/useSettings.js'
+import { useFirestore } from '@/composables/useFirestore.js'
 
 const router = useRouter()
-const { t } = useSettings()
+const { t, currentLanguage } = useSettings()
+const { createPostWithFile, loading, error, clearError } = useFirestore()
 
 // Reactive state
 const fileInput = ref(null)
 const statusCaption = ref('')
 const selectedFile = ref(null)
 const filePreviewUrl = ref('')
+const successMessage = ref('')
 
 // Methods
 const triggerFileInput = () => {
+  if (loading.value) return
   fileInput.value?.click()
 }
 
@@ -82,30 +92,59 @@ const handleFileSelect = (event) => {
     
     // Create new preview URL
     filePreviewUrl.value = URL.createObjectURL(file)
+    clearError()
     console.log('Selected file:', file)
   }
 }
 
 const cancelStatus = () => {
+  if (loading.value) return
   cleanupAndNavigate('/home')
 }
 
-const postStatus = () => {
-  if (!selectedFile.value) return
+const postStatus = async () => {
+  if (!selectedFile.value || loading.value) return
   
-  console.log('Posting status:', statusCaption.value, selectedFile.value)
-  cleanupAndNavigate('/home')
+  try {
+    clearError()
+    successMessage.value = ''
+    
+    console.log('Creating post with file:', selectedFile.value)
+    console.log('Caption:', statusCaption.value)
+    
+    const post = await createPostWithFile(selectedFile.value, statusCaption.value)
+    
+    console.log('Post created successfully:', post)
+    
+    // Show success message
+    successMessage.value = currentLanguage.value === 'EN' 
+      ? 'Post created successfully!' 
+      : 'Tạo bài viết thành công!'
+    
+    // Wait a bit to show success message, then navigate
+    setTimeout(() => {
+      cleanupAndNavigate('/home')
+    }, 1500)
+    
+  } catch (createError) {
+    console.error('Failed to create post:', createError)
+    // Error is handled by useFirestore composable
+  }
 }
 
 const cleanupAndNavigate = (route) => {
   if (filePreviewUrl.value) {
     URL.revokeObjectURL(filePreviewUrl.value)
   }
+  selectedFile.value = null
+  statusCaption.value = ''
+  successMessage.value = ''
+  clearError()
   router.push(route)
 }
 
 // Computed properties
-const canPost = computed(() => !!selectedFile.value)
+const canPost = computed(() => !!selectedFile.value && !loading.value)
 const isImage = computed(() => selectedFile.value?.type.startsWith('image/'))
 const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
 </script>
@@ -153,11 +192,17 @@ const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
   cursor: pointer;
   transition: var(--transition);
   overflow: hidden;
+  position: relative;
 }
 
-.upload-area:hover {
+.upload-area:hover:not(.disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(var(--theme-color-rgb), 0.3);
+}
+
+.upload-area.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Upload States */
@@ -251,10 +296,12 @@ const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
   font-size: 16px;
 }
 
-.post-btn.disabled {
+.control-btn:disabled,
+.control-btn.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  pointer-events: none;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Input */
@@ -283,8 +330,38 @@ const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
   font-weight: 400;
 }
 
-.caption-input:focus {
+.caption-input:focus:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(var(--theme-color-rgb), 0.3);
+}
+
+.caption-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Messages */
+.error-message {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  border-radius: var(--border-radius);
+  color: #ff0000;
+  font-size: 12px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.success-message {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: rgba(0, 255, 0, 0.1);
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  border-radius: var(--border-radius);
+  color: #00aa00;
+  font-size: 12px;
+  text-align: center;
+  flex-shrink: 0;
 }
 </style>

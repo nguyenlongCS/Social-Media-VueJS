@@ -103,6 +103,11 @@ export function useFeatureName() {
 - Auth State → Firebase → authStore → Browser refresh → Firebase restore
 - Remember Login → Encrypted localStorage → Page load → Auto populate
 
+### 5. Luồng Status
+- Tạo bài viết: Status page → Upload file → Create post → Redirect Home
+- Xem bài viết: Home page → Load posts from Firestore → Display feed
+- Xóa bài viết: Click delete → Confirm → Remove file + document
+
 ---
 
 ## QUY TẮC VẬN HÀNH
@@ -112,7 +117,7 @@ export function useFeatureName() {
 - KHÔNG thêm/bớt chức năng khi chưa được yêu cầu  
 - CHỈ giữ logic cần thiết
 - Loại bỏ code trùng lặp, dư thừa 
-- Code sạch 
+- Code sạch, phần <template> dễ hiểu
 - KHÔNG xóa comments hiện có
 - Duy trì responsive 3-column layout
 

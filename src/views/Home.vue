@@ -8,7 +8,7 @@
         <HomeMenu />
       </div>
       <div class="container-main">
-        <!-- <HomeFeed /> -->
+        <HomeFeed />
       </div>
       <div class="container-right">
         <!-- <HomeInteraction /> -->
@@ -20,6 +20,6 @@
 <script setup>
 import NavMid from '@/components/NavMid.vue'
 import HomeMenu from '@/components/HomeMenu.vue'
-// import HomeFeed from '@/components/HomeFeed.vue'
+import HomeFeed from '@/components/HomeFeed.vue'
 // import HomeInteraction from '@/components/HomeInteraction.vue'
 </script>

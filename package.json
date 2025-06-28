@@ -12,6 +12,7 @@
     "@capacitor/android": "^7.4.0",
     "@capacitor/cli": "^7.4.0",
     "@capacitor/core": "^7.4.0",
+    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "express": "^5.1.0",
     "firebase": "^11.9.1",
     "jsonwebtoken": "^9.0.2",
