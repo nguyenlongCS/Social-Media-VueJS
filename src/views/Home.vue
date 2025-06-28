@@ -19,7 +19,7 @@
 </template>
 <script setup>
 import NavMid from '@/components/NavMid.vue'
-import HomeFeatures from '@/components/HomeFeatures.vue'
+import HomeFeatures from '@/components/HomeMenu.vue'
 // import HomeFeed from '@/components/HomeFeed.vue'
 // import HomeInteraction from '@/components/HomeInteraction.vue'
 </script>

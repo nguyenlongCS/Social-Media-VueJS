@@ -15,7 +15,7 @@
 - useValidation.js: Kiểm tra form đầu vào
 
 ### src/components/
-- HomeFeatures.vue: (empty)
+- HomeMenu.vue: (empty)
 - LoginForm.vue: Form đăng nhập/đăng ký với tab
 - LoginSocial.vue: Đăng nhập mạng xã hội + QR 
 - NavMid.vue: Thanh điều hướng giữa 5 items
@@ -109,7 +109,7 @@ export function useFeatureName() {
 - KHÔNG thay đổi giao diện khi chưa được yêu cầu
 - KHÔNG thêm/bớt chức năng khi chưa được yêu cầu  
 - CHỈ giữ logic cần thiết
-- Loại bỏ code trùng lặp, dư thừa (được phép tối ưu)
+- Loại bỏ code trùng lặp, dư thừa 
 - KHÔNG xóa comments hiện có
 - Duy trì responsive 3-column layout
 
