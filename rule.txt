@@ -15,15 +15,17 @@
 - useValidation.js: Kiểm tra form đầu vào
 
 ### src/components/
-- HomeMenu.vue: (empty)
 - LoginForm.vue: Form đăng nhập/đăng ký với tab
 - LoginSocial.vue: Đăng nhập mạng xã hội + QR 
 - NavMid.vue: Thanh điều hướng giữa 5 items
 - NavRight.vue: Theme switcher, ngôn ngữ, logout
+- HomeMenu.vue: Menu điều hướng với các nút (create status, discover, settings,...)
+- StatusCreation.vue: Form tạo status với upload file (ảnh/video), preview, nhập caption.
 
 ### src/views/
 - Home.vue: Trang chủ 
 - Login.vue: Trang đăng nhập 
+- Status.vue: Trang tạo status
 
 ### src/router/
 - index.js: Router với requiresAuth và requiresGuest guards
@@ -110,6 +112,7 @@ export function useFeatureName() {
 - KHÔNG thêm/bớt chức năng khi chưa được yêu cầu  
 - CHỈ giữ logic cần thiết
 - Loại bỏ code trùng lặp, dư thừa 
+- Code sạch 
 - KHÔNG xóa comments hiện có
 - Duy trì responsive 3-column layout
 
@@ -117,6 +120,7 @@ export function useFeatureName() {
 - Vue 3 Composition API pattern nghiêm ngặt
 - Naming: camelCase cho tất cả
 - CSS variables cho theming
+- Không thêm các hiệu ứng hover,...
 
 ### 3. Bảo mật
 - Mã hóa password bằng Base64 trước localStorage

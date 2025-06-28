@@ -4,6 +4,7 @@ import { watch } from 'vue' //watch: để theo dõi trạng thái reactive
 import { useAuthStore } from '@/stores/authStore.js' //truy cập vào store quản lý trạng thái đăng nhập
 import Login from '@/views/Login.vue' //component trang
 import Home from '@/views/Home.vue'   //component trang
+import Status from '@/views/Status.vue' //component trang status
 
 const routes = [
   { 
@@ -14,6 +15,11 @@ const routes = [
   { 
     path: '/home', 
     component: Home,
+    meta: { requiresAuth: true }
+  },
+  { 
+    path: '/status', 
+    component: Status,
     meta: { requiresAuth: true }
   }
   //meta: dùng để gắn cờ tùy chỉnh nhằm kiểm tra quyền truy cập sau này (cái này rất hữu dụng khi dùng middleware như beforeEach).

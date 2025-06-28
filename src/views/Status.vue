@@ -8,11 +8,11 @@
         <HomeMenu />
       </div>
       <div class="container-main">
-        <!-- <HomeFeed /> -->
+        <StatusCreation />
       </div>
       <div class="container-right">
-        <!-- <HomeInteraction /> -->
-        <!-- Like, Emotion, Share, Comment -->
+        <!-- <StatusCustom/> -->
+         <!-- Chỉnh sửa đối tượng, tag bạn bè, vị trí,...-->
       </div>
     </div>
   </div>
@@ -20,6 +20,6 @@
 <script setup>
 import NavMid from '@/components/NavMid.vue'
 import HomeMenu from '@/components/HomeMenu.vue'
-// import HomeFeed from '@/components/HomeFeed.vue'
-// import HomeInteraction from '@/components/HomeInteraction.vue'
+import StatusCreation from '@/components/StatusCreation.vue'
+// import StatusCustom from '@/components/StatusCustom.vue'
 </script>
