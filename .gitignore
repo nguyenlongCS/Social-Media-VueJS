@@ -162,9 +162,6 @@ firebase-debug.*.log
 .firebase/*
 !.firebase/hosting.ZGlzdA.cache
 
-# Firebase local emulator data
-firebase.json.txt
-
 # Firebase config files (comment out if you want to include them)
 # firebase.js
 # .firebaserc
