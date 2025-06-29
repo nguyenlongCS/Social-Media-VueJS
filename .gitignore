@@ -28,3 +28,214 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+lib-cov
+coverage
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Vue.js build output
+dist
+dist-ssr
+*.local
+
+# Vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# IDE directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Firebase cache
+.firebase/*
+!.firebase/hosting.ZGlzdA.cache
+
+# Firebase local emulator data
+firebase.json.txt
+
+# Firebase config files (comment out if you want to include them)
+# firebase.js
+# .firebaserc
+
+# Capacitor
+android/app/build/
+android/app/src/main/assets/public/
+android/.gradle/
+android/build/
+android/local.properties
+android/keystore.properties
+android/app/google-services.json
+
+ios/App/build/
+ios/App/Pods/
+ios/App/public/
+ios/App/Podfile.lock
+ios/App/GoogleService-Info.plist
+
+# Generated files
+dataconnect-generated/
+
+# Test coverage
+coverage/
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+*~
+*.tmp
+*.bak
+*.swp
+
+# Package manager lockfiles (uncomment if you want to exclude them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Build artifacts
+*.tgz
+*.tar.gz
+
+# Local development
+.env.local
+.env.*.local
+
+# Hot reload
+.hot-reload
+
+# Cypress
+/cypress/videos/
+/cypress/screenshots/
+
+# ESLint
+.eslintcache
+
+# Prettier
+.prettierignore
+
+# Stylelint
+.stylelintcache
+
+# Local Netlify folder
+.netlify
+
+# Local Vercel folder
+.vercel
+
+# Miscellaneous
+*.zip
+*.rar
+*.7z
