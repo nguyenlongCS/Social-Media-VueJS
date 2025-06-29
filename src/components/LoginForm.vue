@@ -283,9 +283,6 @@ const getButtonText = (type) => {
   transition: var(--transition);
 }
 
-.forgot-password:hover {
-  text-decoration: underline;
-}
 
 .submit-button {
   width: 100%;
@@ -303,10 +300,6 @@ const getButtonText = (type) => {
   margin-top: auto;
 }
 
-.submit-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(var(--theme-color-rgb), 0.3);
-}
 
 .submit-button:disabled {
   opacity: 0.6;

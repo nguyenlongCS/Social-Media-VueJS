@@ -54,10 +54,6 @@ const navigateToStatus = () => {
     overflow: hidden;
 }
 
-.menu-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(var(--theme-color-rgb), 0.3);
-}
 
 .menu-button:active {
     transform: translateY(0);

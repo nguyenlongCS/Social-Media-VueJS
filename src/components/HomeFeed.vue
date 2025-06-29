@@ -227,10 +227,6 @@ onMounted(() => {
     transition: var(--transition);
 }
 
-.retry-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(var(--theme-color-rgb), 0.3);
-}
 
 /* Empty State */
 .empty-state {
@@ -268,9 +264,6 @@ onMounted(() => {
     transition: var(--transition);
 }
 
-.post-item:hover {
-    background: rgba(0, 0, 0, 0.15);
-}
 
 /* Post Header */
 .post-header {
@@ -328,10 +321,6 @@ onMounted(() => {
     justify-content: center;
     font-size: 12px;
     transition: var(--transition);
-}
-
-.action-btn:hover:not(:disabled) {
-    background: rgba(255, 0, 0, 0.2);
 }
 
 .action-btn:disabled {
@@ -406,10 +395,6 @@ onMounted(() => {
     transition: var(--transition);
 }
 
-.load-more-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(var(--theme-color-rgb), 0.3);
-}
 
 .load-more-btn:disabled {
     opacity: 0.6;

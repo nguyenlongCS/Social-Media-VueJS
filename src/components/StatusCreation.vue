@@ -195,11 +195,6 @@ const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
   position: relative;
 }
 
-.upload-area:hover:not(.disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(var(--theme-color-rgb), 0.3);
-}
-
 .upload-area.disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -281,11 +276,6 @@ const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
   justify-content: center;
   transition: var(--transition);
   font-weight: bold;
-}
-
-.control-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(var(--theme-color-rgb), 0.3);
 }
 
 .close-btn {
