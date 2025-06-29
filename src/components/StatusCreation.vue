@@ -1,12 +1,12 @@
 <template>
   <div id="container-create-status">
-    <!-- User Info Section -->
+    <!-- User Info -->
     <div class="user-info">
       <div class="avatar"></div>
       <span class="username">{{ t.me }}</span>
     </div>
     
-    <!-- Upload Section -->
+    <!-- Upload Area -->
     <div class="upload-area" @click="triggerFileInput" :class="{ disabled: loading }">
       <!-- Empty State -->
       <div v-if="!selectedFile" class="upload-empty">
@@ -15,18 +15,33 @@
       
       <!-- File Preview -->
       <div v-else class="file-preview">
+        <!-- Image -->
         <img v-if="isImage" :src="filePreviewUrl" alt="Preview" class="preview-media">
+        
+        <!-- Video -->
         <video v-else-if="isVideo" :src="filePreviewUrl" class="preview-media" controls></video>
+        
+        <!-- Audio -->
+        <div v-else-if="isAudio" class="audio-preview">
+          <div class="audio-waveform">
+            <img src="/src/components/icons/voice.png" alt="Voice" class="voice-icon">
+          </div>
+          <div class="audio-controls">
+            <audio :src="filePreviewUrl" class="audio-player" controls></audio>
+          </div>
+        </div>
+        
+        <!-- Other Files -->
         <div v-else class="file-info">
           <div class="file-icon">📄</div>
           <div class="file-name">{{ selectedFile.name }}</div>
         </div>
       </div>
       
-      <input type="file" ref="fileInput" accept="image/*,video/*" style="display: none;" @change="handleFileSelect">
+      <input type="file" ref="fileInput" accept="image/*,video/*,audio/*" style="display: none;" @change="handleFileSelect">
     </div>
     
-    <!-- Controls Section -->
+    <!-- Controls -->
     <div class="controls">
       <button class="control-btn close-btn" @click="cancelStatus" :disabled="loading">×</button>
       
@@ -51,7 +66,7 @@
       </button>
     </div>
 
-    <!-- Error/Success Messages -->
+    <!-- Messages -->
     <div v-if="error" class="error-message">{{ error }}</div>
     <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
   </div>
@@ -67,12 +82,18 @@ const router = useRouter()
 const { t, currentLanguage } = useSettings()
 const { createPostWithFile, loading, error, clearError } = useFirestore()
 
-// Reactive state
+// State
 const fileInput = ref(null)
 const statusCaption = ref('')
 const selectedFile = ref(null)
 const filePreviewUrl = ref('')
 const successMessage = ref('')
+
+// Computed
+const canPost = computed(() => !!selectedFile.value && !loading.value)
+const isImage = computed(() => selectedFile.value?.type.startsWith('image/'))
+const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
+const isAudio = computed(() => selectedFile.value?.type.startsWith('audio/'))
 
 // Methods
 const triggerFileInput = () => {
@@ -82,19 +103,16 @@ const triggerFileInput = () => {
 
 const handleFileSelect = (event) => {
   const file = event.target.files[0]
-  if (file) {
-    selectedFile.value = file
-    
-    // Cleanup previous URL
-    if (filePreviewUrl.value) {
-      URL.revokeObjectURL(filePreviewUrl.value)
-    }
-    
-    // Create new preview URL
-    filePreviewUrl.value = URL.createObjectURL(file)
-    clearError()
-    console.log('Selected file:', file)
+  if (!file) return
+  
+  selectedFile.value = file
+  
+  if (filePreviewUrl.value) {
+    URL.revokeObjectURL(filePreviewUrl.value)
   }
+  
+  filePreviewUrl.value = URL.createObjectURL(file)
+  clearError()
 }
 
 const cancelStatus = () => {
@@ -109,26 +127,15 @@ const postStatus = async () => {
     clearError()
     successMessage.value = ''
     
-    console.log('Creating post with file:', selectedFile.value)
-    console.log('Caption:', statusCaption.value)
+    await createPostWithFile(selectedFile.value, statusCaption.value)
     
-    const post = await createPostWithFile(selectedFile.value, statusCaption.value)
-    
-    console.log('Post created successfully:', post)
-    
-    // Show success message
     successMessage.value = currentLanguage.value === 'EN' 
       ? 'Post created successfully!' 
       : 'Tạo bài viết thành công!'
     
-    // Wait a bit to show success message, then navigate
-    setTimeout(() => {
-      cleanupAndNavigate('/home')
-    }, 1500)
-    
+    setTimeout(() => cleanupAndNavigate('/home'), 1500)
   } catch (createError) {
     console.error('Failed to create post:', createError)
-    // Error is handled by useFirestore composable
   }
 }
 
@@ -142,11 +149,6 @@ const cleanupAndNavigate = (route) => {
   clearError()
   router.push(route)
 }
-
-// Computed properties
-const canPost = computed(() => !!selectedFile.value && !loading.value)
-const isImage = computed(() => selectedFile.value?.type.startsWith('image/'))
-const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
 </script>
 
 <style scoped>
@@ -225,12 +227,47 @@ const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
   transition: var(--transition);
 }
 
-/* Preview Media */
+/* Media Preview */
 .preview-media {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: var(--border-radius);
+}
+
+/* Audio Preview */
+.audio-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 30px 20px 20px 20px;
+}
+
+.audio-waveform {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-icon {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.audio-controls {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.audio-player {
+  width: 85%;
+  height: 35px;
 }
 
 /* File Info */
@@ -290,8 +327,6 @@ const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
 .control-btn.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 /* Input */
@@ -331,27 +366,25 @@ const isVideo = computed(() => selectedFile.value?.type.startsWith('video/'))
 }
 
 /* Messages */
-.error-message {
+.error-message,
+.success-message {
   margin-top: 10px;
   padding: 10px;
-  background-color: rgba(255, 0, 0, 0.1);
-  border: 1px solid rgba(255, 0, 0, 0.3);
   border-radius: var(--border-radius);
-  color: #ff0000;
   font-size: 12px;
   text-align: center;
   flex-shrink: 0;
 }
 
+.error-message {
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ff0000;
+}
+
 .success-message {
-  margin-top: 10px;
-  padding: 10px;
   background-color: rgba(0, 255, 0, 0.1);
   border: 1px solid rgba(0, 255, 0, 0.3);
-  border-radius: var(--border-radius);
   color: #00aa00;
-  font-size: 12px;
-  text-align: center;
-  flex-shrink: 0;
 }
 </style>

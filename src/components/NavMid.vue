@@ -22,6 +22,7 @@
         </button>
     </div>
 </template>
+
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
@@ -29,16 +30,11 @@ import { useSettings } from '@/composables/useSettings.js'
 
 const router = useRouter()
 const route = useRoute()
-// Updated import - từ useStorage sang useSettings
 const { getItem, setItem } = useSettings()
 
-// Storage key cho active nav item
 const NAV_ACTIVE_KEY = 'activeNavItem'
-
-// Reactive state cho active nav item
 const activeNavItem = ref('home')
 
-// Mapping giữa nav item và route path
 const navRoutes = {
     home: '/',
     profile: '/profile',
@@ -47,7 +43,6 @@ const navRoutes = {
     notification: '/notification'
 }
 
-// Reverse mapping để xác định active nav từ current route
 const routeToNav = {
     '/': 'home',
     '/profile': 'profile',
@@ -56,36 +51,28 @@ const routeToNav = {
     '/notification': 'notification'
 }
 
-// Function để set active nav và chuyển trang
 const setActiveNav = (navItem) => {
     activeNavItem.value = navItem
-
-    // Chuyển trang tương ứng
     const targetRoute = navRoutes[navItem]
     if (targetRoute && route.path !== targetRoute) {
         router.push(targetRoute)
     }
 }
 
-// Khởi tạo active nav từ localStorage hoặc current route
 onMounted(() => {
-    // Ưu tiên lấy từ current route
     const currentNav = routeToNav[route.path]
     if (currentNav) {
         activeNavItem.value = currentNav
     } else {
-        // Nếu không match route, lấy từ localStorage
         const savedNav = getItem(NAV_ACTIVE_KEY, 'home')
         activeNavItem.value = savedNav
     }
 })
 
-// Watch activeNavItem để lưu vào localStorage
 watch(activeNavItem, (newValue) => {
     setItem(NAV_ACTIVE_KEY, newValue)
 }, { immediate: true })
 
-// Watch route changes để update active nav
 watch(() => route.path, (newPath) => {
     const navItem = routeToNav[newPath]
     if (navItem && navItem !== activeNavItem.value) {
@@ -93,17 +80,21 @@ watch(() => route.path, (newPath) => {
     }
 })
 </script>
+
 <style scoped>
 .container-mid-nav {
     position: fixed;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 350px;
+    /* Scale theo tỉ lệ container-main: 1.14fr trong grid 1fr 1.14fr 1fr */
+    width: calc(1.14 * (100vw - 2 * var(--container-gap) - 2 * var(--container-padding)) / 3.14);
+    max-width: calc(1200px * 1.14 / 3.14); /* Responsive với max-width */
+    min-width: 320px; /* Minimum width để đảm bảo nav items không quá chật */
     height: 60px;
     background: linear-gradient(135deg, var(--theme-color));
     border-radius: 30px;
-    padding: 10px 20px;
+    padding: 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -125,6 +116,8 @@ watch(() => route.path, (newPath) => {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     backdrop-filter: blur(5px);
+    /* Flexible spacing - nav items sẽ tự điều chỉnh khoảng cách */
+    flex-shrink: 0;
 }
 
 .nav-item.active {
@@ -180,5 +173,71 @@ watch(() => route.path, (newPath) => {
 
 .icon-notification::before {
     content: "🔔";
+}
+
+/* Tablet Styles */
+@media screen and (max-width: 1024px) {
+    .container-mid-nav {
+        width: calc(1.14 * (100vw - 2 * var(--container-gap) - 2 * var(--container-padding)) / 3.14);
+        max-width: calc(900px * 1.14 / 3.14);
+        min-width: 280px;
+    }
+}
+
+/* Mobile Landscape */
+@media screen and (max-width: 768px) {
+    .container-mid-nav {
+        width: calc(1.4 * (100vw - 2 * var(--container-gap) - 2 * var(--container-padding)) / 3);
+        max-width: calc(700px * 1.4 / 3);
+        min-width: 260px;
+        height: 50px;
+    }
+    
+    .nav-item {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .nav-icon {
+        font-size: 18px;
+    }
+}
+
+/* Mobile Portrait */
+@media screen and (max-width: 480px) {
+    .container-mid-nav {
+        width: calc(100vw - 2 * var(--container-gap) - 2 * var(--container-padding));
+        max-width: calc(100vw - 32px);
+        min-width: 240px;
+        height: 45px;
+        top: 15px;
+    }
+    
+    .nav-item {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .nav-icon {
+        font-size: 16px;
+    }
+}
+
+/* Extra Small Devices */
+@media screen and (max-width: 320px) {
+    .container-mid-nav {
+        min-width: 200px;
+        height: 40px;
+        padding: 8px;
+    }
+    
+    .nav-item {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .nav-icon {
+        font-size: 14px;
+    }
 }
 </style>

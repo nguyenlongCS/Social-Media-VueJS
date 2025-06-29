@@ -12,9 +12,9 @@
     <div class="form-container">
       <form v-show="activeTab === 'login'" class="form" @submit.prevent="onLogin">
         <div class="input-group">
-          <input type="email" class="input-field" :placeholder="t.emailPlaceholder" v-model="loginForm.email" required>
+          <input type="email" class="input-field theme-input" :placeholder="t.emailPlaceholder" v-model="loginForm.email" required>
           <div class="password-input-container">
-            <input :type="showPassword ? 'text' : 'password'" class="input-field" :placeholder="t.passwordPlaceholder"
+            <input :type="showPassword ? 'text' : 'password'" class="input-field theme-input" :placeholder="t.passwordPlaceholder"
               v-model="loginForm.password" required>
             <button type="button" class="toggle-password" @click="showPassword = !showPassword">
               {{ showPassword ? '🙈' : '👁️' }}
@@ -37,16 +37,16 @@
 
       <form v-show="activeTab === 'signup'" class="form" @submit.prevent="onSignup">
         <div class="input-group">
-          <input type="email" class="input-field" :placeholder="t.emailPlaceholder" v-model="signupForm.email" required>
+          <input type="email" class="input-field theme-input" :placeholder="t.emailPlaceholder" v-model="signupForm.email" required>
           <div class="password-input-container">
-            <input :type="showPasswordSignup ? 'text' : 'password'" class="input-field"
+            <input :type="showPasswordSignup ? 'text' : 'password'" class="input-field theme-input"
               :placeholder="t.passwordPlaceholder" v-model="signupForm.password" required>
             <button type="button" class="toggle-password" @click="showPasswordSignup = !showPasswordSignup">
               {{ showPasswordSignup ? '🙈' : '👁️' }}
             </button>
           </div>
           <div class="password-input-container">
-            <input :type="showConfirmPassword ? 'text' : 'password'" class="input-field"
+            <input :type="showConfirmPassword ? 'text' : 'password'" class="input-field theme-input"
               :placeholder="t.confirmPasswordPlaceholder" v-model="signupForm.confirmPassword" required>
             <button type="button" class="toggle-password" @click="showConfirmPassword = !showConfirmPassword">
               {{ showConfirmPassword ? '🙈' : '👁️' }}
@@ -222,19 +222,22 @@ const getButtonText = (type) => {
   gap: 15px;
 }
 
-.input-field {
+/* Force theme color for all input fields */
+.input-field,
+.theme-input {
   width: 100%;
   padding: 15px 20px;
   border: none;
   border-radius: var(--border-radius-large);
-  background: linear-gradient(135deg, var(--theme-color));
-  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--theme-color)) !important;
+  color: var(--text-primary) !important;
   font-size: 16px;
   outline: none;
 }
 
-.input-field::placeholder {
-  color: var(--bg-tertiary);
+.input-field::placeholder,
+.theme-input::placeholder {
+  color: var(--bg-tertiary) !important;
   font-weight: 500;
 }
 
@@ -283,7 +286,6 @@ const getButtonText = (type) => {
   transition: var(--transition);
 }
 
-
 .submit-button {
   width: 100%;
   padding: 15px 20px;
@@ -299,7 +301,6 @@ const getButtonText = (type) => {
   letter-spacing: 1px;
   margin-top: auto;
 }
-
 
 .submit-button:disabled {
   opacity: 0.6;
