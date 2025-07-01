@@ -209,6 +209,7 @@ onMounted(() => {
     from {
         transform: rotate(0deg);
     }
+
     to {
         transform: rotate(360deg);
     }
@@ -388,7 +389,10 @@ onMounted(() => {
     word-wrap: break-word;
     overflow: hidden;
     display: -webkit-box;
+    line-clamp: 3;
+    /* Chuẩn hiện đại */
     -webkit-line-clamp: 3;
+    /* Hỗ trợ Safari/Chrome cũ */
     -webkit-box-orient: vertical;
 }
 
