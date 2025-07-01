@@ -10,7 +10,7 @@
     <div class="upload-area" @click="triggerFileInput" :class="{ disabled: loading }">
       <!-- Empty State -->
       <div v-if="!selectedFile" class="upload-empty">
-        <div class="plus-icon">+</div>
+        <img src="/src/components/icons/plus.png" alt="Upload" class="plus-icon">
       </div>
       
       <!-- File Preview -->
@@ -216,16 +216,11 @@ const cleanupAndNavigate = (route) => {
 .plus-icon {
   width: 60px;
   height: 60px;
-  border-radius: 15px;
-  background: rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40px;
-  font-weight: bold;
-  color: var(--text-primary);
+  object-fit: contain;
+  opacity: 0.8;
   transition: var(--transition);
 }
+
 
 /* Media Preview */
 .preview-media {

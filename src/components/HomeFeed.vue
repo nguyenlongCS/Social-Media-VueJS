@@ -14,7 +14,7 @@
 
         <!-- Empty State -->
         <div v-else-if="posts.length === 0" class="empty-state">
-            <div class="empty-icon">📋</div>
+            <img src="/src/components/icons/empty.png" alt="No posts" class="empty-icon">
             <div class="empty-text">{{ t.noPosts || 'No posts yet' }}</div>
         </div>
 
@@ -239,7 +239,9 @@ onMounted(() => {
 }
 
 .empty-icon {
-    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
     opacity: 0.5;
 }
 

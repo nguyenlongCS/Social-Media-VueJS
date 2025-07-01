@@ -17,7 +17,9 @@
             <input :type="showPassword ? 'text' : 'password'" class="input-field theme-input" :placeholder="t.passwordPlaceholder"
               v-model="loginForm.password" required>
             <button type="button" class="toggle-password" @click="showPassword = !showPassword">
-              {{ showPassword ? '🙈' : '👁️' }}
+              <img :src="showPassword ? '/src/components/icons/hide.png' : '/src/components/icons/show.png'" 
+                   :alt="showPassword ? 'Hide password' : 'Show password'" 
+                   class="password-icon">
             </button>
           </div>
         </div>
@@ -42,14 +44,18 @@
             <input :type="showPasswordSignup ? 'text' : 'password'" class="input-field theme-input"
               :placeholder="t.passwordPlaceholder" v-model="signupForm.password" required>
             <button type="button" class="toggle-password" @click="showPasswordSignup = !showPasswordSignup">
-              {{ showPasswordSignup ? '🙈' : '👁️' }}
+              <img :src="showPasswordSignup ? '/src/components/icons/hide.png' : '/src/components/icons/show.png'" 
+                   :alt="showPasswordSignup ? 'Hide password' : 'Show password'" 
+                   class="password-icon">
             </button>
           </div>
           <div class="password-input-container">
             <input :type="showConfirmPassword ? 'text' : 'password'" class="input-field theme-input"
               :placeholder="t.confirmPasswordPlaceholder" v-model="signupForm.confirmPassword" required>
             <button type="button" class="toggle-password" @click="showConfirmPassword = !showConfirmPassword">
-              {{ showConfirmPassword ? '🙈' : '👁️' }}
+              <img :src="showConfirmPassword ? '/src/components/icons/hide.png' : '/src/components/icons/show.png'" 
+                   :alt="showConfirmPassword ? 'Hide password' : 'Show password'" 
+                   class="password-icon">
             </button>
           </div>
         </div>
@@ -253,10 +259,21 @@ const getButtonText = (type) => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 16px;
-  color: var(--bg-tertiary);
   z-index: 1;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.password-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  opacity: 0.7;
+  transition: var(--transition);
+}
+
 
 .form-options {
   display: flex;
