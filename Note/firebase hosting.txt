@@ -1,0 +1,10 @@
+npm install -g firebase-tools
+firebase login
+firebase init
+npm install firebase
+firebase init firestore
+firebase deploy --only firestore
+firebase deploy (sau khi sửa firebase.json)
+firebase init hosting
+npm run bulid
+firebase deploy --only hosting

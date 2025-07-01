@@ -1,0 +1,24 @@
+npm init vue@latest
+cd your-vue-project
+npm install
+
+npm install @capacitor/core @capacitor/cli
+npx cap init
+
+npm run build
+
+npx cap add android # hoặc npx cap add ios
+
+npx cap copy
+
+npx cap open android # hoặc npx cap open ios
+
+npm install @capacitor/camera
+npx cap sync
+
+Sau mỗi lần update Vue app:
+npm run build
+npx cap copy
+npx cap open android
+
+

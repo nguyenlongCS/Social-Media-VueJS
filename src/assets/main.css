@@ -1,0 +1,358 @@
+:root {
+    --theme-color: #ffeb7c;
+    --theme-color-rgb: 255, 123, 66;
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-tertiary: #333;
+    --text-primary: #000;
+    --text-secondary: #999;
+    --text-light: #fff;
+    --border-radius: 20px;
+    --border-radius-small: 10px;
+    --border-radius-large: 25px;
+    --transition: all 0.3s ease;
+    
+    /* Responsive variables */
+    --container-gap: 30px;
+    --container-padding: 20px;
+    --nav-height: 60px;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Main Layout Container */
+.login-page,
+.home-page {
+    display: grid;
+    grid-template-columns: 1fr 1.14fr 1fr; /* Tỉ lệ 350:400:350 = 1:1.14:1 */
+    height: calc(100vh - var(--nav-height) - 60px); /* Trừ nav và padding + margin */
+    gap: var(--container-gap);
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--container-padding);
+    margin-top: calc(var(--nav-height) + 20px); /* Margin thay vì padding để tránh overlap */
+    align-items: start;
+}
+
+/* Container Styles */
+.container-left,
+.container-right {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.container-main {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    height: 100%;
+    width: 100%;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Navigation Styles */
+.container-mid-nav {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000; /* Giảm z-index để không đè lên content quan trọng */
+    width: min(350px, calc(100vw - 40px));
+}
+
+.container-right-nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 15px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Content Overflow Prevention */
+.container-left > *,
+.container-main > *,
+.container-right > * {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* Tablet Styles */
+@media screen and (max-width: 1024px) {
+    :root {
+        --container-gap: 20px;
+        --container-padding: 15px;
+    }
+    
+    .login-page,
+    .home-page {
+        max-width: 900px;
+        height: calc(100vh - var(--nav-height) - 50px);
+        margin-top: calc(var(--nav-height) + 15px);
+    }
+    
+    .container-main {
+        padding: 30px 20px;
+    }
+    
+    .container-mid-nav {
+        width: min(300px, calc(100vw - 30px));
+    }
+    
+    .container-right-nav {
+        padding: 10px 15px;
+        gap: 8px;
+    }
+}
+
+/* Mobile Landscape */
+@media screen and (max-width: 768px) {
+    :root {
+        --container-gap: 15px;
+        --container-padding: 10px;
+        --nav-height: 50px;
+    }
+    
+    .login-page,
+    .home-page {
+        grid-template-columns: 0.8fr 1.4fr 0.8fr; /* Tăng tỉ trọng cho main */
+        max-width: 700px;
+        height: calc(100vh - var(--nav-height) - 40px);
+        margin-top: calc(var(--nav-height) + 10px);
+    }
+    
+    .container-main {
+        padding: 25px 15px;
+    }
+    
+    .container-mid-nav {
+        width: min(280px, calc(100vw - 20px));
+    }
+    
+    .container-right-nav {
+        padding: 8px 10px;
+        gap: 6px;
+    }
+    
+    /* Smaller nav buttons on mobile */
+    .nav-button,
+    .nav-circle {
+        height: 18px;
+        font-size: 12px;
+    }
+    
+    .nav-button {
+        padding: 0 10px;
+    }
+    
+    .logout-button {
+        width: 80px;
+    }
+    
+    .language-button {
+        width: 60px;
+    }
+}
+
+/* Mobile Portrait */
+@media screen and (max-width: 480px) {
+    :root {
+        --container-gap: 10px;
+        --container-padding: 8px;
+    }
+    
+    .login-page,
+    .home-page {
+        grid-template-columns: 1fr; /* Single column layout */
+        grid-template-rows: auto 1fr auto; /* Stack vertically */
+        max-width: 100%;
+        height: calc(100vh - var(--nav-height) - 32px);
+        gap: var(--container-gap);
+        margin-top: calc(var(--nav-height) + 8px);
+    }
+    
+    .container-left,
+    .container-right {
+        height: auto;
+        min-height: 100px;
+    }
+    
+    .container-main {
+        padding: 20px 15px;
+        height: auto;
+        flex: 1;
+    }
+    
+    .container-mid-nav {
+        width: calc(100vw - 16px);
+        top: 5px; /* Giảm top để không đè lên content */
+    }
+    
+    .container-right-nav {
+        padding: 5px 8px;
+        gap: 4px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    
+    /* Even smaller nav elements */
+    .nav-button,
+    .nav-circle {
+        height: 16px;
+        font-size: 11px;
+    }
+    
+    .logout-button {
+        width: 70px;
+    }
+    
+    .language-button {
+        width: 50px;
+    }
+}
+
+/* Extra Small Devices */
+@media screen and (max-width: 320px) {
+    :root {
+        --container-gap: 8px;
+        --container-padding: 5px;
+    }
+    
+    .container-main {
+        padding: 15px 10px;
+    }
+    
+    .container-mid-nav {
+        top: 3px; /* Giảm thêm cho thiết bị nhỏ */
+    }
+    
+    .container-right-nav {
+        padding: 4px 6px;
+        gap: 3px;
+    }
+    
+    .nav-button,
+    .nav-circle {
+        height: 14px;
+        font-size: 10px;
+    }
+    
+    .logout-button {
+        width: 60px;
+    }
+    
+    .language-button {
+        width: 40px;
+    }
+}
+
+/* High DPI Displays */
+@media screen and (min-width: 1200px) {
+    .login-page,
+    .home-page {
+        max-width: 1400px;
+        gap: 40px;
+    }
+    
+    .container-main {
+        padding: 50px 40px;
+    }
+}
+
+/* Ultra Wide Displays */
+@media screen and (min-width: 1600px) {
+    .login-page,
+    .home-page {
+        max-width: 1600px;
+    }
+}
+
+/* Prevent content overflow in all containers */
+.container-left,
+.container-main,
+.container-right {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Ensure images and videos don't overflow */
+.container-left img,
+.container-main img,
+.container-right img,
+.container-left video,
+.container-main video,
+.container-right video {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Scrollable content when needed */
+.container-left > *,
+.container-main > *,
+.container-right > * {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Custom scrollbar for webkit browsers */
+.container-left::-webkit-scrollbar,
+.container-main::-webkit-scrollbar,
+.container-right::-webkit-scrollbar {
+    width: 6px;
+}
+
+.container-left::-webkit-scrollbar-track,
+.container-main::-webkit-scrollbar-track,
+.container-right::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+}
+
+.container-left::-webkit-scrollbar-thumb,
+.container-main::-webkit-scrollbar-thumb,
+.container-right::-webkit-scrollbar-thumb {
+    background: var(--theme-color);
+    border-radius: 3px;
+}
+
+/* Print styles */
+@media print {
+    .container-mid-nav,
+    .container-right-nav {
+        display: none;
+    }
+    
+    .login-page,
+    .home-page {
+        padding-top: var(--container-padding);
+        height: auto;
+    }
+}

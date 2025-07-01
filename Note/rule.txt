@@ -1,0 +1,133 @@
+# QUY TẮC DỰ ÁN COZY-VUE
+
+## TỔNG QUAN DỰ ÁN
+- Ứng dụng mạng xã hội Vue 3 + Firebase
+- Quản lý state bằng Composition API
+- Xác thực Firebase với social login
+
+---
+
+## CẤU TRÚC THƯ MỤC
+
+### src/composables/
+- useAuth.js: Xử lý đăng nhập, đăng ký, quên mật khẩu, social login
+- useSettings.js: Quản lý theme, ngôn ngữ, localStorage 
+- useValidation.js: Kiểm tra form đầu vào
+
+### src/components/
+- LoginForm.vue: Form đăng nhập/đăng ký với tab
+- LoginSocial.vue: Đăng nhập mạng xã hội + QR 
+- NavMid.vue: Thanh điều hướng giữa 5 items
+- NavRight.vue: Theme switcher, ngôn ngữ, logout
+- HomeMenu.vue: Menu điều hướng với các nút (create status, discover, settings,...)
+- StatusCreation.vue: Form tạo status với upload file (ảnh/video), preview, nhập caption.
+
+### src/views/
+- Home.vue: Trang chủ 
+- Login.vue: Trang đăng nhập 
+- Status.vue: Trang tạo status
+
+### src/router/
+- index.js: Router với requiresAuth và requiresGuest guards
+
+### src/stores/
+- authStore.js: Quản lý trạng thái Firebase auth
+
+### src/assets/
+- main.css: CSS variables và responsive 3-column grid
+
+### Root Files:
+- App.vue: Component gốc 
+- main.js: Khởi tạo app
+- firebase.js: Cấu hình Firebase
+- index.html: HTML entry point
+- package.json: Dependencies và scripts
+- vite.config.js: Vite configuration
+
+---
+
+## QUY TẮC PHÁT TRIỂN
+
+### 1. Cấu trúc Composables
+export function useFeatureName() {
+  // 1. Imports
+  // 2. Global state
+  // 3. Reactive state  
+  // 4. Methods
+  // 5. Lifecycle hooks
+  // 6. Return object
+}
+
+### 2. Xử lý lỗi thống nhất
+- Tập trung error messages trong useAuth
+- Hỗ trợ đa ngôn ngữ EN/VN
+- withErrorHandling wrapper cho async operations
+- Loading states quản lý tập trung
+
+### 3. Quản lý State
+- Global state: Firebase auth qua authStore
+- Settings: localStorage qua useSettings
+- Component state: local reactive trong composables
+- Không truy cập localStorage trực tiếp từ components
+
+### 4. Giao tiếp Component
+- Props xuống, events lên cho parent-child
+- Composables cho logic dùng chung
+- Router cho URL state
+- Global stores chỉ cho authentication
+
+---
+
+## LUỒNG XỬ LÝ
+
+### 1. Luồng xác thực
+- Login/Signup → useAuth → Firebase → authStore → Router
+- Social Login → Firebase Google/Facebook → authStore → Auto redirect  
+- Logout → authStore.logout → Firebase signOut → Router redirect
+- Route Guards → authStore.isLoggedIn → Redirect logic
+
+
+### 2. Luồng cài đặt
+- Theme Change → useSettings.changeThemeColor → CSS Variables + localStorage
+- Language Toggle → useSettings.toggleLanguage → EN/VN translations + localStorage
+- Storage → useSettings methods → localStorage với error handling
+
+
+### 3. Luồng validation
+- Form Submit → useValidation → Error return → useAuth.handleError → Display
+- Email/Password validation → Error keys → i18n error messages
+
+
+### 4. Luồng lưu trữ
+- User Preferences → useSettings → localStorage → Page refresh → Auto restore
+- Auth State → Firebase → authStore → Browser refresh → Firebase restore
+- Remember Login → Encrypted localStorage → Page load → Auto populate
+
+### 5. Luồng Status
+- Tạo bài viết: Status page → Upload file → Create post → Redirect Home
+- Xem bài viết: Home page → Load posts from Firestore → Display feed
+- Xóa bài viết: Click delete → Confirm → Remove file + document
+
+---
+
+## QUY TẮC VẬN HÀNH
+
+### 1. Quy trình phát triển
+- KHÔNG thay đổi giao diện khi chưa được yêu cầu
+- KHÔNG thêm/bớt chức năng khi chưa được yêu cầu  
+- CHỈ giữ logic cần thiết
+- Loại bỏ code trùng lặp, dư thừa 
+- Code sạch, phần <template> dễ hiểu
+- KHÔNG xóa comments hiện có
+- Duy trì responsive 3-column layout
+
+### 2. Tiêu chuẩn code
+- Vue 3 Composition API pattern nghiêm ngặt
+- Naming: camelCase cho tất cả
+- CSS variables cho theming
+- Không thêm các hiệu ứng hover,...
+
+### 3. Bảo mật
+- Mã hóa password bằng Base64 trước localStorage
+- Input validation qua useValidation
+- Firebase security rules compliance
