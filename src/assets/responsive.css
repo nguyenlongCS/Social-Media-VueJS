@@ -1,6 +1,14 @@
 /* ================================================
-   RESPONSIVE.CSS - All responsive breakpoints
+   RESPONSIVE.CSS - Mobile Fixed Layout (No Scroll)
    ================================================ */
+
+/* Base - Disable all scrolling globally */
+html, body {
+    overflow: hidden;
+    height: 100vh;
+    position: fixed;
+    width: 100%;
+}
 
 /* Tablet Styles */
 @media screen and (max-width: 1024px) {
@@ -12,12 +20,14 @@
     .login-page,
     .home-page {
         max-width: 900px;
-        height: calc(100vh - var(--nav-height) - 50px);
+        height: 100vh;
         margin-top: calc(var(--nav-height) + 15px);
+        overflow: hidden;
     }
     
     .container-main {
         padding: 30px 20px;
+        overflow: hidden;
     }
     
     .container-mid-nav {
@@ -40,14 +50,16 @@
     
     .login-page,
     .home-page {
-        grid-template-columns: 0.8fr 1.4fr 0.8fr; /* Tăng tỉ trọng cho main */
+        grid-template-columns: 0.8fr 1.4fr 0.8fr;
         max-width: 700px;
-        height: calc(100vh - var(--nav-height) - 40px);
+        height: 100vh;
         margin-top: calc(var(--nav-height) + 10px);
+        overflow: hidden;
     }
     
     .container-main {
         padding: 25px 15px;
+        overflow: hidden;
     }
     
     .container-mid-nav {
@@ -79,43 +91,47 @@
     }
 }
 
-/* Mobile Portrait */
+/* Mobile Portrait - iPhone 14, Galaxy Z Fold, etc. */
 @media screen and (max-width: 480px) {
     :root {
         --container-gap: 0px;
         --container-padding: 0px;
-        --nav-height: 50px;
-        --nav-mid-height: 45px;
+        --nav-height: 55px;
+        --nav-mid-height: 50px;
     }
     
-    /* Mobile Layout - Only show one container at a time */
+    /* Fixed mobile layout - no scrolling */
     .login-page,
     .home-page {
         display: grid;
         grid-template-columns: 1fr;
         width: 100vw;
-        height: calc(100vh - var(--nav-height) - var(--nav-mid-height));
+        height: 100vh;
         max-width: none;
         margin: 0;
         padding: 0;
         gap: 0;
-        margin-top: calc(var(--nav-height) + var(--nav-mid-height));
         overflow: hidden;
+        position: fixed;
+        top: 0;
+        left: 0;
     }
     
-    /* Mobile containers - stack on top of each other, only one visible */
+    /* Mobile containers - full screen, no scroll */
     .container-left,
     .container-main, 
     .container-right {
         grid-column: 1;
         grid-row: 1;
         width: 100vw;
-        height: 100%;
+        height: calc(100vh - var(--nav-height) - var(--nav-mid-height));
+        margin-top: calc(var(--nav-height) + var(--nav-mid-height));
         border-radius: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
+        overflow: hidden;
         transition: transform 0.3s ease, opacity 0.3s ease;
-        position: relative;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
     
     /* Default: Show main container */
@@ -129,7 +145,7 @@
         transform: translateX(0);
         opacity: 1;
         pointer-events: auto;
-        padding: 20px 15px;
+        padding: 15px;
     }
     
     .container-right {
@@ -172,7 +188,7 @@
         pointer-events: auto;
     }
     
-    /* NavRight - Always on top center for mobile */
+    /* NavRight - Fixed top center */
     .container-right-nav {
         position: fixed;
         top: 0;
@@ -180,33 +196,36 @@
         right: auto;
         transform: translateX(-50%);
         z-index: 2000;
-        padding: 8px 16px;
-        gap: 8px;
+        padding: 10px 20px;
+        gap: 10px;
         justify-content: center;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(10px);
-        border-radius: 0 0 15px 15px;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(15px);
+        border-radius: 0 0 20px 20px;
         width: auto;
-        min-width: 280px;
+        min-width: 300px;
+        height: var(--nav-height);
+        display: flex;
+        align-items: center;
     }
     
-    /* NavMid - Below NavRight, only show when logged in */
+    /* NavMid - Below NavRight */
     .container-mid-nav {
         position: fixed;
         top: var(--nav-height);
         left: 50%;
         transform: translateX(-50%);
         z-index: 1500;
-        width: calc(100vw - 20px);
-        max-width: 320px;
+        width: calc(100vw - 40px);
+        max-width: 350px;
         height: var(--nav-mid-height);
         background: linear-gradient(135deg, var(--theme-color));
-        border-radius: 22px;
-        padding: 8px;
+        border-radius: 25px;
+        padding: 10px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
     }
     
     /* Hide NavMid on login page */
@@ -214,15 +233,112 @@
         display: none;
     }
     
-    /* Smaller nav elements for mobile */
+    /* Adjust login page layout */
+    .login-page .container-left,
+    .login-page .container-main, 
+    .login-page .container-right {
+        height: calc(100vh - var(--nav-height));
+        margin-top: var(--nav-height);
+    }
+    
+    /* Nav elements sizing for mobile */
+    .nav-button,
+    .nav-circle {
+        height: 18px;
+        font-size: 12px;
+    }
+    
+    .nav-button {
+        padding: 0 10px;
+    }
+    
+    .logout-button {
+        width: 75px;
+    }
+    
+    .language-button {
+        width: 50px;
+    }
+    
+    /* NavMid items for mobile */
+    .nav-item {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        backdrop-filter: blur(8px);
+        flex-shrink: 0;
+    }
+    
+    .nav-item.active {
+        background: rgba(0, 0, 0, 0.3);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .nav-icon {
+        width: 18px;
+        height: 18px;
+        object-fit: contain;
+        transition: var(--transition);
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    }
+}
+
+/* iPhone 14 Pro Max, Galaxy Z Fold open */
+@media screen and (max-width: 430px) and (min-height: 850px) {
+    :root {
+        --nav-height: 60px;
+        --nav-mid-height: 55px;
+    }
+    
+    .container-right-nav {
+        height: var(--nav-height);
+        padding: 12px 25px;
+    }
+    
+    .container-mid-nav {
+        height: var(--nav-mid-height);
+        max-width: 380px;
+    }
+    
+    .nav-item {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .nav-icon {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Extra Small Devices - iPhone SE, small Android */
+@media screen and (max-width: 375px) {
+    :root {
+        --nav-height: 50px;
+        --nav-mid-height: 45px;
+    }
+    
+    .container-right-nav {
+        min-width: 280px;
+        padding: 8px 15px;
+    }
+    
+    .container-mid-nav {
+        width: calc(100vw - 30px);
+        max-width: 320px;
+        height: var(--nav-mid-height);
+    }
+    
     .nav-button,
     .nav-circle {
         height: 16px;
         font-size: 11px;
-    }
-    
-    .nav-button {
-        padding: 0 8px;
     }
     
     .logout-button {
@@ -233,53 +349,34 @@
         width: 45px;
     }
     
-    /* NavMid items for mobile */
     .nav-item {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        border: none;
-        background: rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        backdrop-filter: blur(5px);
-        flex-shrink: 0;
-    }
-    
-    .nav-item.active {
-        background: rgba(0, 0, 0, 0.25);
-        transform: translateY(-2px) scale(1.05);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        width: 38px;
+        height: 38px;
     }
     
     .nav-icon {
         width: 16px;
         height: 16px;
-        object-fit: contain;
-        transition: var(--transition);
-        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
     }
 }
 
-/* Extra Small Devices */
+/* Ultra small devices */
 @media screen and (max-width: 320px) {
     :root {
-        --container-gap: 8px;
-        --container-padding: 5px;
-    }
-    
-    .container-main {
-        padding: 15px 10px;
-    }
-    
-    .container-mid-nav {
-        top: 3px; /* Giảm thêm cho thiết bị nhỏ */
+        --nav-height: 45px;
+        --nav-mid-height: 40px;
     }
     
     .container-right-nav {
-        padding: 4px 6px;
-        gap: 3px;
+        min-width: 260px;
+        padding: 6px 12px;
+    }
+    
+    .container-mid-nav {
+        width: calc(100vw - 20px);
+        max-width: 280px;
+        height: var(--nav-mid-height);
+        padding: 8px;
     }
     
     .nav-button,
@@ -295,25 +392,94 @@
     .language-button {
         width: 40px;
     }
+    
+    .nav-item {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .nav-icon {
+        width: 14px;
+        height: 14px;
+    }
 }
 
-/* High DPI Displays */
-@media screen and (min-width: 1200px) {
+/* Disable scrolling on all components */
+#container-home-feed,
+#container-menu-home,
+#container-form-login,
+#container-social-login,
+#container-create-status {
+    overflow: hidden !important;
+}
+
+/* Remove scrollbar styling since we're removing scroll */
+.container-left::-webkit-scrollbar,
+.container-main::-webkit-scrollbar,
+.container-right::-webkit-scrollbar {
+    display: none;
+}
+
+.container-left,
+.container-main,
+.container-right {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* Desktop NavMid sizing optimization - REMOVED: Handled in NavMid component */
+
+/* High DPI Displays - Optimized */
+@media screen and (min-width: 1200px) and (max-width: 1599px) {
+    :root {
+        --container-gap: 22px;
+        --container-padding: 16px;
+        --nav-height: 50px;
+    }
+    
     .login-page,
     .home-page {
-        max-width: 1400px;
-        gap: 40px;
+        max-width: 1150px;
+        gap: 22px;
+        height: calc(100vh - var(--nav-height) - 50px);
+        margin-top: calc(var(--nav-height) + 15px);
+        overflow: hidden;
     }
     
     .container-main {
-        padding: 50px 40px;
+        padding: 28px 24px;
+        overflow: hidden;
+    }
+    
+    .container-right-nav {
+        padding: 10px 16px;
+        gap: 8px;
     }
 }
 
-/* Ultra Wide Displays */
+/* Ultra Wide Displays - Controlled sizing */
 @media screen and (min-width: 1600px) {
+    :root {
+        --container-gap: 28px;
+        --container-padding: 20px;
+        --nav-height: 55px;
+    }
+    
     .login-page,
     .home-page {
-        max-width: 1600px;
+        max-width: 1300px;
+        height: calc(100vh - var(--nav-height) - 60px);
+        margin-top: calc(var(--nav-height) + 20px);
+        overflow: hidden;
+    }
+    
+    .container-main {
+        padding: 35px 30px;
+        overflow: hidden;
+    }
+    
+    .container-right-nav {
+        padding: 12px 20px;
+        gap: 10px;
     }
 }

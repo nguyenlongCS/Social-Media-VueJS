@@ -12,10 +12,10 @@
     --border-radius-large: 25px;
     --transition: all 0.3s ease;
     
-    /* Responsive variables */
-    --container-gap: 30px;
-    --container-padding: 20px;
-    --nav-height: 60px;
+    /* Responsive variables - optimized for laptop/desktop */
+    --container-gap: 20px;
+    --container-padding: 15px;
+    --nav-height: 50px;
 }
 
 /* Reset */
@@ -25,33 +25,35 @@
     box-sizing: border-box;
 }
 
-/* Base Styles */
-body {
+/* Base Styles - Fixed layout, no scroll */
+html, body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    min-height: 100vh;
-    overflow-x: hidden;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    position: fixed;
 }
 
-/* Main Layout Container */
+/* Main Layout Container - Responsive dimensions */
 .login-page,
 .home-page {
     display: grid;
     grid-template-columns: 1fr 1.14fr 1fr; /* Tỉ lệ 350:400:350 = 1:1.14:1 */
-    height: calc(100vh - var(--nav-height) - 60px); /* Trừ nav và padding + margin */
+    height: calc(100vh - var(--nav-height) - 50px); /* Space for NavMid */
     gap: var(--container-gap);
     width: 100%;
-    max-width: 1200px;
+    max-width: 1100px; /* Reduced max-width */
     margin: 0 auto;
     padding: var(--container-padding);
-    margin-top: calc(var(--nav-height) + 20px); /* Margin thay vì padding để tránh overlap */
+    margin-top: calc(var(--nav-height) + 15px); /* Space for both navs */
     align-items: start;
-    /* Mobile swipe transition */
-    transition: transform 0.3s ease;
+    overflow: hidden;
+    position: relative;
 }
 
-/* Container Styles */
+/* Container Styles - No overflow */
 .container-left,
 .container-right {
     background-color: var(--bg-secondary);
@@ -67,7 +69,7 @@ body {
     border-radius: var(--border-radius);
     height: 100%;
     width: 100%;
-    padding: 40px 30px;
+    padding: 25px 20px; /* Reduced padding */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -78,11 +80,11 @@ body {
 /* Navigation Styles */
 .container-mid-nav {
     position: fixed;
-    top: 10px;
+    top: -15px; /* Moved up to avoid overlapping */
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1000; /* Giảm z-index để không đè lên content quan trọng */
-    width: min(350px, calc(100vw - 40px));
+    z-index: 1000;
+    width: min(320px, calc(100vw - 40px)); /* Reduced width */
 }
 
 .container-right-nav {
@@ -90,14 +92,14 @@ body {
     top: 0;
     right: 0;
     z-index: 1000;
-    padding: 15px 20px;
+    padding: 10px 15px; /* Reduced padding */
     display: flex;
-    gap: 10px;
+    gap: 8px; /* Reduced gap */
     align-items: center;
     flex-wrap: wrap;
 }
 
-/* Content Overflow Prevention */
+/* Content Overflow Prevention - Force no scroll */
 .container-left > *,
 .container-main > *,
 .container-right > * {
@@ -105,16 +107,16 @@ body {
     overflow: hidden;
 }
 
-/* Prevent content overflow in all containers */
 .container-left,
 .container-main,
 .container-right {
     word-wrap: break-word;
     overflow-wrap: break-word;
     hyphens: auto;
+    overflow: hidden !important;
 }
 
-/* Ensure images and videos don't overflow */
+/* Ensure images and videos fit container */
 .container-left img,
 .container-main img,
 .container-right img,
@@ -122,40 +124,159 @@ body {
 .container-main video,
 .container-right video {
     max-width: 100%;
-    height: auto;
+    max-height: 100%;
     object-fit: contain;
 }
 
-/* Scrollable content when needed */
-.container-left > *,
-.container-main > *,
-.container-right > * {
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-/* Custom scrollbar for webkit browsers */
+/* Remove all scrollbars */
 .container-left::-webkit-scrollbar,
 .container-main::-webkit-scrollbar,
 .container-right::-webkit-scrollbar {
-    width: 6px;
+    display: none;
 }
 
-.container-left::-webkit-scrollbar-track,
-.container-main::-webkit-scrollbar-track,
-.container-right::-webkit-scrollbar-track {
-    background: var(--bg-tertiary);
-    border-radius: 3px;
+.container-left,
+.container-main,
+.container-right {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-.container-left::-webkit-scrollbar-thumb,
-.container-main::-webkit-scrollbar-thumb,
-.container-right::-webkit-scrollbar-thumb {
-    background: var(--theme-color);
-    border-radius: 3px;
+/* Component specific no-scroll */
+#container-home-feed,
+#container-menu-home,
+#container-form-login,
+#container-social-login,
+#container-create-status {
+    height: 100%;
+    overflow: hidden !important;
 }
 
-/* Print styles */
+/* Posts container - fit within bounds */
+.posts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Post items - compact for mobile */
+.post-item {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    padding: 12px;
+    flex-shrink: 0;
+}
+
+/* Media elements - controlled sizing */
+.media-image,
+.media-video {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+/* Input elements - fit container */
+.input-field,
+.theme-input,
+.caption-input {
+    width: 100%;
+    max-width: 100%;
+    flex-shrink: 0;
+}
+
+/* Menu buttons - compact layout */
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.menu-button {
+    padding: 12px 15px;
+    border: none;
+    border-radius: var(--border-radius-large);
+    background: linear-gradient(135deg, var(--theme-color));
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: lowercase;
+    letter-spacing: 0.5px;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+/* Upload area - fit container */
+.upload-area {
+    flex: 1;
+    min-height: 0;
+    border-radius: var(--border-radius);
+    background: linear-gradient(135deg, var(--theme-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Form containers - compact */
+.form-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* QR section - fit available space */
+.qr-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.qr-code {
+    width: 150px;
+    height: 150px;
+    background-color: white;
+    border-radius: var(--border-radius-small);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Social login - compact */
+.social-login {
+    flex-shrink: 0;
+    text-align: center;
+    padding: 15px 0;
+}
+
+/* Print styles - maintain no scroll */
 @media print {
     .container-mid-nav,
     .container-right-nav {
@@ -165,6 +286,57 @@ body {
     .login-page,
     .home-page {
         padding-top: var(--container-padding);
-        height: auto;
+        height: 100vh;
+        overflow: hidden;
+    }
+}
+
+/* Desktop optimization - ensure proper fit */
+@media screen and (min-width: 1024px) and (max-width: 1399px) {
+    :root {
+        --container-gap: 18px;
+        --container-padding: 12px;
+        --nav-height: 45px;
+    }
+    
+    .login-page,
+    .home-page {
+        max-width: 1000px;
+        height: calc(100vh - var(--nav-height) - 45px);
+        margin-top: calc(var(--nav-height) + 12px);
+    }
+    
+    .container-main {
+        padding: 20px 18px;
+    }
+    
+    .container-right-nav {
+        padding: 8px 12px;
+        gap: 6px;
+    }
+}
+
+/* Large desktop optimization */
+@media screen and (min-width: 1400px) {
+    :root {
+        --container-gap: 25px;
+        --container-padding: 18px;
+        --nav-height: 55px;
+    }
+    
+    .login-page,
+    .home-page {
+        max-width: 1200px;
+        height: calc(100vh - var(--nav-height) - 55px);
+        margin-top: calc(var(--nav-height) + 18px);
+    }
+    
+    .container-main {
+        padding: 30px 25px;
+    }
+    
+    .container-right-nav {
+        padding: 12px 18px;
+        gap: 10px;
     }
 }

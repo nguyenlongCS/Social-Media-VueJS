@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div class="container-mid-nav">
-        <NavMid />
-      </div>
+    <!-- NavMid - Only render once, positioned correctly -->
+    <NavMid />
+    
     <div class="home-page" :class="getContainerClass()">
       <div class="container-left">
         <HomeMenu />
@@ -17,11 +17,13 @@
     </div>
   </div>
 </template>
+
 <script setup>
 import NavMid from '@/components/NavMid.vue'
 import HomeMenu from '@/components/HomeMenu.vue'
 import StatusCreation from '@/components/StatusCreation.vue'
 // import StatusCustom from '@/components/StatusCustom.vue'
 import { useMobileSwipe } from '@/composables/useMobileSwipe.js'
+
 const { getContainerClass } = useMobileSwipe()
 </script>
