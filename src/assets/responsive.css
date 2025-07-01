@@ -1,0 +1,319 @@
+/* ================================================
+   RESPONSIVE.CSS - All responsive breakpoints
+   ================================================ */
+
+/* Tablet Styles */
+@media screen and (max-width: 1024px) {
+    :root {
+        --container-gap: 20px;
+        --container-padding: 15px;
+    }
+    
+    .login-page,
+    .home-page {
+        max-width: 900px;
+        height: calc(100vh - var(--nav-height) - 50px);
+        margin-top: calc(var(--nav-height) + 15px);
+    }
+    
+    .container-main {
+        padding: 30px 20px;
+    }
+    
+    .container-mid-nav {
+        width: min(300px, calc(100vw - 30px));
+    }
+    
+    .container-right-nav {
+        padding: 10px 15px;
+        gap: 8px;
+    }
+}
+
+/* Mobile Landscape */
+@media screen and (max-width: 768px) {
+    :root {
+        --container-gap: 15px;
+        --container-padding: 10px;
+        --nav-height: 50px;
+    }
+    
+    .login-page,
+    .home-page {
+        grid-template-columns: 0.8fr 1.4fr 0.8fr; /* Tăng tỉ trọng cho main */
+        max-width: 700px;
+        height: calc(100vh - var(--nav-height) - 40px);
+        margin-top: calc(var(--nav-height) + 10px);
+    }
+    
+    .container-main {
+        padding: 25px 15px;
+    }
+    
+    .container-mid-nav {
+        width: min(280px, calc(100vw - 20px));
+    }
+    
+    .container-right-nav {
+        padding: 8px 10px;
+        gap: 6px;
+    }
+    
+    /* Smaller nav buttons on mobile */
+    .nav-button,
+    .nav-circle {
+        height: 18px;
+        font-size: 12px;
+    }
+    
+    .nav-button {
+        padding: 0 10px;
+    }
+    
+    .logout-button {
+        width: 80px;
+    }
+    
+    .language-button {
+        width: 60px;
+    }
+}
+
+/* Mobile Portrait */
+@media screen and (max-width: 480px) {
+    :root {
+        --container-gap: 0px;
+        --container-padding: 0px;
+        --nav-height: 50px;
+        --nav-mid-height: 45px;
+    }
+    
+    /* Mobile Layout - Only show one container at a time */
+    .login-page,
+    .home-page {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100vw;
+        height: calc(100vh - var(--nav-height) - var(--nav-mid-height));
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        gap: 0;
+        margin-top: calc(var(--nav-height) + var(--nav-mid-height));
+        overflow: hidden;
+    }
+    
+    /* Mobile containers - stack on top of each other, only one visible */
+    .container-left,
+    .container-main, 
+    .container-right {
+        grid-column: 1;
+        grid-row: 1;
+        width: 100vw;
+        height: 100%;
+        border-radius: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        position: relative;
+    }
+    
+    /* Default: Show main container */
+    .container-left {
+        transform: translateX(-100%);
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    .container-main {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+        padding: 20px 15px;
+    }
+    
+    .container-right {
+        transform: translateX(100%);
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    /* Show left container */
+    .show-left .container-left {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .show-left .container-main {
+        transform: translateX(100%);
+        opacity: 0;
+        pointer-events: none;
+    }
+    .show-left .container-right {
+        transform: translateX(200%);
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    /* Show right container */
+    .show-right .container-left {
+        transform: translateX(-200%);
+        opacity: 0;
+        pointer-events: none;
+    }
+    .show-right .container-main {
+        transform: translateX(-100%);
+        opacity: 0;
+        pointer-events: none;
+    }
+    .show-right .container-right {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    /* NavRight - Always on top center for mobile */
+    .container-right-nav {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        z-index: 2000;
+        padding: 8px 16px;
+        gap: 8px;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 0 0 15px 15px;
+        width: auto;
+        min-width: 280px;
+    }
+    
+    /* NavMid - Below NavRight, only show when logged in */
+    .container-mid-nav {
+        position: fixed;
+        top: var(--nav-height);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1500;
+        width: calc(100vw - 20px);
+        max-width: 320px;
+        height: var(--nav-mid-height);
+        background: linear-gradient(135deg, var(--theme-color));
+        border-radius: 22px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Hide NavMid on login page */
+    .login-page .container-mid-nav {
+        display: none;
+    }
+    
+    /* Smaller nav elements for mobile */
+    .nav-button,
+    .nav-circle {
+        height: 16px;
+        font-size: 11px;
+    }
+    
+    .nav-button {
+        padding: 0 8px;
+    }
+    
+    .logout-button {
+        width: 65px;
+    }
+    
+    .language-button {
+        width: 45px;
+    }
+    
+    /* NavMid items for mobile */
+    .nav-item {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        backdrop-filter: blur(5px);
+        flex-shrink: 0;
+    }
+    
+    .nav-item.active {
+        background: rgba(0, 0, 0, 0.25);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .nav-icon {
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
+        transition: var(--transition);
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    }
+}
+
+/* Extra Small Devices */
+@media screen and (max-width: 320px) {
+    :root {
+        --container-gap: 8px;
+        --container-padding: 5px;
+    }
+    
+    .container-main {
+        padding: 15px 10px;
+    }
+    
+    .container-mid-nav {
+        top: 3px; /* Giảm thêm cho thiết bị nhỏ */
+    }
+    
+    .container-right-nav {
+        padding: 4px 6px;
+        gap: 3px;
+    }
+    
+    .nav-button,
+    .nav-circle {
+        height: 14px;
+        font-size: 10px;
+    }
+    
+    .logout-button {
+        width: 60px;
+    }
+    
+    .language-button {
+        width: 40px;
+    }
+}
+
+/* High DPI Displays */
+@media screen and (min-width: 1200px) {
+    .login-page,
+    .home-page {
+        max-width: 1400px;
+        gap: 40px;
+    }
+    
+    .container-main {
+        padding: 50px 40px;
+    }
+}
+
+/* Ultra Wide Displays */
+@media screen and (min-width: 1600px) {
+    .login-page,
+    .home-page {
+        max-width: 1600px;
+    }
+}

@@ -3,7 +3,7 @@
     <div class="container-mid-nav">
         <NavMid />
       </div>
-    <div class="home-page">
+    <div class="home-page" :class="getContainerClass()">
       <div class="container-left">
         <HomeMenu />
       </div>
@@ -22,4 +22,6 @@ import NavMid from '@/components/NavMid.vue'
 import HomeMenu from '@/components/HomeMenu.vue'
 import HomeFeed from '@/components/HomeFeed.vue'
 // import HomeInteraction from '@/components/HomeInteraction.vue'
+import { useMobileSwipe } from '@/composables/useMobileSwipe.js'
+const { getContainerClass } = useMobileSwipe()
 </script>
