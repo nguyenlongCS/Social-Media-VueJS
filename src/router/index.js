@@ -8,7 +8,8 @@ import Status from '@/views/Status.vue' //component trang status
 import Profile from '@/views/Profile.vue' //component trang profile
 import Friend from '@/views/Friend.vue' //component trang friend
 import Mess from '@/views/Mess.vue' //component trang mess
-import Notification from '@/views/Notification.vue' //component trang mess
+import Notification from '@/views/Notification.vue' //component trang notification
+import Discover from '@/views/Discover.vue' //component trang discover
 
 const routes = [
   {
@@ -44,6 +45,11 @@ const routes = [
   {
     path: '/notification',
     component: Notification,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/discover',
+    component: Discover,
     meta: { requiresAuth: true }
   }
   //meta: dùng để gắn cờ tùy chỉnh nhằm kiểm tra quyền truy cập sau này (cái này rất hữu dụng khi dùng middleware như beforeEach).

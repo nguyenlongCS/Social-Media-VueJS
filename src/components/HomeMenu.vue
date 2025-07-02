@@ -2,7 +2,7 @@
     <div id="container-menu-home">
         <div class="menu-buttons">
             <button class="menu-button" @click="navigateToStatus">{{ t.actionButtons.upload }}</button>
-            <button class="menu-button">{{ t.actionButtons.discover }}</button>
+            <button class="menu-button" @click="navigateToDiscover">{{ t.actionButtons.discover }}</button>
             <button class="menu-button">{{ t.actionButtons.settings }}</button>
         </div>
     </div>
@@ -17,6 +17,10 @@ const { t } = useSettings()
 
 const navigateToStatus = () => {
     router.push('/status')
+}
+
+const navigateToDiscover = () => {
+    router.push('/discover')
 }
 </script>
 
@@ -53,7 +57,6 @@ const navigateToStatus = () => {
     position: relative;
     overflow: hidden;
 }
-
 
 .menu-button:active {
     transform: translateY(0);
