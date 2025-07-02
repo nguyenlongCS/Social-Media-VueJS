@@ -1,14 +1,4 @@
-.control-spacer {
-    width: 35px;
-    height: 35px;
-    /* Empty spacer to maintain layout when no delete button */
-}
-
-.input-spacer {
-    flex: 1;
-    max-width: 200px;
-    /* Empty spacer to maintain layout when no caption */
-}<template>
+<template>
     <div id="container-home-feed" @wheel="handleScroll" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
         <!-- Loading State -->
         <div v-if="loading" class="loading-state">
@@ -33,21 +23,25 @@
             <!-- User Info -->
             <div class="user-info">
                 <div class="user-avatar"></div>
-                <span class="username">{{ currentPost.userEmail }}</span>
+                <span class="username">{{ displayUsername(currentPost) }}</span>
             </div>
             
             <!-- Post Media Area -->
             <div class="post-media-area">
                 <!-- Image -->
-                <img v-if="currentPost.mediaType.startsWith('image/')" :src="currentPost.mediaUrl" :alt="currentPost.caption"
-                    class="preview-media">
+                <img v-if="currentPost.mediaType?.startsWith('image/')" 
+                     :src="currentPost.mediaUrl" 
+                     :alt="currentPost.caption"
+                     class="preview-media">
                 
                 <!-- Video -->
-                <video v-else-if="currentPost.mediaType.startsWith('video/')" :src="currentPost.mediaUrl" class="preview-media"
-                    controls></video>
+                <video v-else-if="currentPost.mediaType?.startsWith('video/')" 
+                       :src="currentPost.mediaUrl" 
+                       class="preview-media"
+                       controls></video>
                 
                 <!-- Audio -->
-                <div v-else-if="currentPost.mediaType.startsWith('audio/')" class="audio-preview">
+                <div v-else-if="currentPost.mediaType?.startsWith('audio/')" class="audio-preview">
                     <div class="audio-waveform">
                         <img src="/src/components/icons/sound.gif" alt="Sound" class="voice-icon">
                     </div>
@@ -65,18 +59,36 @@
             
             <!-- Controls -->
             <div class="controls">
-                <button class="control-btn delete-btn" @click="handleDeletePost(currentPost)" 
-                    :disabled="deletingPost === currentPost.id" v-if="isOwnPost(currentPost)">
-                    <img v-if="deletingPost === currentPost.id" src="/src/components/icons/loading.png" alt="Loading" class="control-icon loading">
-                    <img v-else src="/src/components/icons/delete.png" alt="Delete" class="control-icon">
+                <!-- Delete Button for own posts / Like Button for others -->
+                <button v-if="isOwnPost(currentPost)" 
+                        class="control-btn delete-btn" 
+                        @click="handleDeletePost(currentPost)" 
+                        :disabled="deletingPost === currentPost.id">
+                    <img v-if="deletingPost === currentPost.id" 
+                         src="/src/components/icons/loading.png" 
+                         alt="Loading" 
+                         class="control-icon loading">
+                    <img v-else 
+                         src="/src/components/icons/delete.png" 
+                         alt="Delete" 
+                         class="control-icon">
                 </button>
-                <div v-else class="control-spacer"></div>
+                <button v-else 
+                        class="control-btn like-btn" 
+                        @click="handleLikePost(currentPost)">
+                    <img src="/src/components/icons/heart.png" 
+                         alt="Like" 
+                         class="control-icon">
+                </button>
                 
-                <div class="input-wrapper" v-if="currentPost.caption && currentPost.caption.trim()">
-                    <div class="caption-display">{{ currentPost.caption }}</div>
+                <!-- Caption Display - Always show wrapper -->
+                <div class="input-wrapper">
+                    <div class="caption-display" :class="{ 'no-caption': !currentPost.caption?.trim() }">
+                        {{ currentPost.caption?.trim() || (currentLanguage === 'EN' ? 'No Caption' : 'Không có chú thích') }}
+                    </div>
                 </div>
-                <div v-else class="input-spacer"></div>
                 
+                <!-- Options Button -->
                 <button class="control-btn option-btn">
                     <img src="/src/components/icons/options.png" alt="Options" class="control-icon">
                 </button>
@@ -123,28 +135,18 @@ const handleScroll = (event) => {
     event.preventDefault()
     isScrolling.value = true
     
-    // Clear existing timeout
-    if (scrollTimeout) {
-        clearTimeout(scrollTimeout)
-    }
+    if (scrollTimeout) clearTimeout(scrollTimeout)
     
     const delta = event.deltaY
     
-    if (delta > 0) {
-        // Scroll down - next post
-        if (currentIndex.value < posts.value.length - 1) {
-            currentIndex.value++
-        }
-    } else {
-        // Scroll up - previous post
-        if (currentIndex.value > 0) {
-            currentIndex.value--
-        }
+    if (delta > 0 && currentIndex.value < posts.value.length - 1) {
+        currentIndex.value++
+    } else if (delta < 0 && currentIndex.value > 0) {
+        currentIndex.value--
     }
     
     hideScrollHint()
     
-    // Prevent rapid scrolling
     scrollTimeout = setTimeout(() => {
         isScrolling.value = false
     }, 500)
@@ -161,19 +163,12 @@ const handleTouchEnd = (event) => {
     const touchEndY = event.changedTouches[0].clientY
     const deltaY = touchStartY.value - touchEndY
     
-    // Minimum swipe distance
     if (Math.abs(deltaY) < 50) return
     
-    if (deltaY > 0) {
-        // Swipe up - next post
-        if (currentIndex.value < posts.value.length - 1) {
-            currentIndex.value++
-        }
-    } else {
-        // Swipe down - previous post
-        if (currentIndex.value > 0) {
-            currentIndex.value--
-        }
+    if (deltaY > 0 && currentIndex.value < posts.value.length - 1) {
+        currentIndex.value++
+    } else if (deltaY < 0 && currentIndex.value > 0) {
+        currentIndex.value--
     }
     
     hideScrollHint()
@@ -182,10 +177,7 @@ const handleTouchEnd = (event) => {
 const hideScrollHint = () => {
     showScrollHint.value = false
     
-    // Show hint again after 3 seconds
-    if (hintTimeout) {
-        clearTimeout(hintTimeout)
-    }
+    if (hintTimeout) clearTimeout(hintTimeout)
     hintTimeout = setTimeout(() => {
         showScrollHint.value = true
     }, 3000)
@@ -198,7 +190,6 @@ const loadPosts = async () => {
         const fetchedPosts = await getPosts(20)
         posts.value = fetchedPosts
         currentIndex.value = 0
-        console.log('Posts loaded:', fetchedPosts)
     } catch (loadError) {
         console.error('Failed to load posts:', loadError)
     }
@@ -217,15 +208,11 @@ const handleDeletePost = async (post) => {
         deletingPost.value = post.id
         await deletePost(post.id, post.storagePath)
 
-        // Remove post from local array
         posts.value = posts.value.filter(p => p.id !== post.id)
 
-        // Adjust current index if needed
         if (currentIndex.value >= posts.value.length && posts.value.length > 0) {
             currentIndex.value = posts.value.length - 1
         }
-
-        console.log('Post deleted successfully:', post.id)
     } catch (deleteError) {
         console.error('Failed to delete post:', deleteError)
     } finally {
@@ -233,40 +220,31 @@ const handleDeletePost = async (post) => {
     }
 }
 
-const formatDate = (timestamp) => {
-    if (!timestamp) return ''
-
-    try {
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-        return date.toLocaleDateString(currentLanguage.value === 'EN' ? 'en-US' : 'vi-VN', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    } catch (formatError) {
-        console.warn('Date format error:', formatError)
-        return ''
-    }
+const isOwnPost = (post) => {
+    return user.value && post && post.userId === user.value.uid
 }
 
-const isOwnPost = (post) => {
-    const result = user.value && post.userId === user.value.uid
-    console.log('Debug isOwnPost:', {
-        userExists: !!user.value,
-        currentUserId: user.value?.uid,
-        postUserId: post.userId,
-        isOwn: result
-    })
-    return result
+// Display username with @gmail.com removed, show "Me/Tôi" for own posts
+const displayUsername = (post) => {
+    if (!post?.userEmail) return ''
+    
+    if (isOwnPost(post)) {
+        return currentLanguage.value === 'EN' ? 'Me' : 'Tôi'
+    }
+    
+    return post.userEmail.replace('@gmail.com', '')
+}
+
+// Handle like action (placeholder for future implementation)
+const handleLikePost = (post) => {
+    console.log('Like post:', post.id)
+    // TODO: Implement like functionality
 }
 
 // Load posts on component mount
 onMounted(() => {
     loadPosts()
     
-    // Show hint initially
     setTimeout(() => {
         showScrollHint.value = true
     }, 1000)
@@ -274,12 +252,8 @@ onMounted(() => {
 
 // Cleanup
 onUnmounted(() => {
-    if (scrollTimeout) {
-        clearTimeout(scrollTimeout)
-    }
-    if (hintTimeout) {
-        clearTimeout(hintTimeout)
-    }
+    if (scrollTimeout) clearTimeout(scrollTimeout)
+    if (hintTimeout) clearTimeout(hintTimeout)
 })
 </script>
 
@@ -307,15 +281,6 @@ onUnmounted(() => {
 .loading-spinner {
     font-size: 24px;
     animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
 }
 
 .loading-text {
@@ -375,7 +340,7 @@ onUnmounted(() => {
     text-align: center;
 }
 
-/* Single Post Container - Match StatusCreation layout */
+/* Single Post Container */
 .single-post-container {
     height: 100%;
     display: flex;
@@ -384,7 +349,7 @@ onUnmounted(() => {
     gap: 20px;
 }
 
-/* User Info - Match StatusCreation */
+/* User Info */
 .user-info {
     display: flex;
     align-items: center;
@@ -406,7 +371,7 @@ onUnmounted(() => {
     font-size: 14px;
 }
 
-/* Post Media Area - Fixed height */
+/* Post Media Area */
 .post-media-area {
     flex: 1;
     border-radius: var(--border-radius);
@@ -416,10 +381,10 @@ onUnmounted(() => {
     justify-content: center;
     overflow: hidden;
     position: relative;
-    min-height: 300px; /* Fixed minimum height */
+    min-height: 300px;
 }
 
-/* Media Preview - Consistent sizing */
+/* Media Preview */
 .preview-media {
     width: 100%;
     height: 100%;
@@ -427,7 +392,7 @@ onUnmounted(() => {
     border-radius: var(--border-radius);
 }
 
-/* Audio Preview - Match StatusCreation */
+/* Audio Preview */
 .audio-preview {
     display: flex;
     flex-direction: column;
@@ -462,7 +427,7 @@ onUnmounted(() => {
     height: 35px;
 }
 
-/* File Info - Match StatusCreation */
+/* File Info */
 .file-info {
     display: flex;
     flex-direction: column;
@@ -483,7 +448,7 @@ onUnmounted(() => {
     word-break: break-word;
 }
 
-/* Controls - Match StatusCreation layout */
+/* Controls */
 .controls {
     display: flex;
     justify-content: space-between;
@@ -505,14 +470,7 @@ onUnmounted(() => {
     justify-content: center;
     transition: var(--transition);
     font-weight: bold;
-}
-
-.delete-btn {
-    /* Position like close-btn in StatusCreation */
-}
-
-.option-btn {
-    /* Position like post-btn in StatusCreation */
+    flex-shrink: 0;
 }
 
 .control-icon {
@@ -526,12 +484,8 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .control-btn:disabled {
@@ -539,7 +493,15 @@ onUnmounted(() => {
     cursor: not-allowed;
 }
 
-/* Input wrapper for caption */
+.like-btn {
+    background: linear-gradient(135deg, var(--theme-color));
+}
+
+.like-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Caption */
 .input-wrapper {
     flex: 1;
     max-width: 200px;
@@ -561,6 +523,10 @@ onUnmounted(() => {
     line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+}
+
+.caption-display.no-caption {
+    opacity: 0.5;
 }
 
 /* Scroll Hint */
@@ -594,15 +560,9 @@ onUnmounted(() => {
 }
 
 @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-5px);
-    }
-    60% {
-        transform: translateY(-3px);
-    }
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-5px); }
+    60% { transform: translateY(-3px); }
 }
 
 /* Responsive Design */
