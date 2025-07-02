@@ -38,7 +38,7 @@ export function useFirestore() {
       'delete-failed': 'Failed to delete post. Please try again.',
       'unauthorized': 'You must be logged in to perform this action.',
       'file-too-large': 'File size must be less than 10MB.',
-      'invalid-file-type': 'Invalid file type. Only images and videos are allowed.'
+      'invalid-file-type': 'Invalid file type. Only images, videos, and audio files are allowed.'
     },
     VN: {
       'upload-failed': 'Tải file lên thất bại. Vui lòng thử lại.',
@@ -47,7 +47,7 @@ export function useFirestore() {
       'delete-failed': 'Xóa bài viết thất bại. Vui lòng thử lại.',
       'unauthorized': 'Bạn phải đăng nhập để thực hiện hành động này.',
       'file-too-large': 'Kích thước file phải nhỏ hơn 10MB.',
-      'invalid-file-type': 'Loại file không hợp lệ. Chỉ cho phép ảnh và video.'
+      'invalid-file-type': 'Loại file không hợp lệ. Chỉ cho phép ảnh, video và âm thanh.'
     }
   }
 
@@ -59,7 +59,7 @@ export function useFirestore() {
     error.value = ''
   }
 
-  // Validate file before upload
+  // Validate file before upload - Updated to include audio
   const validateFile = (file) => {
     // Check file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
@@ -67,8 +67,10 @@ export function useFirestore() {
       return false
     }
 
-    // Check file type
-    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+    // Check file type - Updated to include audio files
+    if (!file.type.startsWith('image/') && 
+        !file.type.startsWith('video/') && 
+        !file.type.startsWith('audio/')) {
       setError('invalid-file-type')
       return false
     }
@@ -126,6 +128,7 @@ export function useFirestore() {
         mediaUrl: postData.mediaUrl || '',
         mediaType: postData.mediaType || '',
         fileName: postData.fileName || '',
+        storagePath: postData.storagePath || '', // Add storage path for deletion
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         likes: 0,
@@ -161,7 +164,8 @@ export function useFirestore() {
         caption,
         mediaUrl: fileData.url,
         mediaType: fileData.fileType,
-        fileName: fileData.fileName
+        fileName: fileData.fileName,
+        storagePath: fileData.storagePath
       }
 
       const post = await createPost(postData)

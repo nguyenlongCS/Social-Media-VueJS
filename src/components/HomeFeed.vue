@@ -1,5 +1,15 @@
-<template>
-    <div id="container-home-feed">
+.control-spacer {
+    width: 35px;
+    height: 35px;
+    /* Empty spacer to maintain layout when no delete button */
+}
+
+.input-spacer {
+    flex: 1;
+    max-width: 200px;
+    /* Empty spacer to maintain layout when no caption */
+}<template>
+    <div id="container-home-feed" @wheel="handleScroll" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
         <!-- Loading State -->
         <div v-if="loading" class="loading-state">
             <div class="loading-spinner">⏳</div>
@@ -18,64 +28,72 @@
             <div class="empty-text">{{ t.noPosts || 'No posts yet' }}</div>
         </div>
 
-        <!-- Posts Feed -->
-        <div v-else class="posts-container">
-            <div v-for="post in displayedPosts" :key="post.id" class="post-item">
-                <!-- Post Header -->
-                <div class="post-header">
-                    <div class="user-info">
-                        <div class="user-avatar"></div>
-                        <div class="user-details">
-                            <div class="user-email">{{ post.userEmail }}</div>
-                            <div class="post-date">{{ formatDate(post.createdAt) }}</div>
-                        </div>
+        <!-- Single Post Display -->
+        <div v-else-if="currentPost" class="single-post-container">
+            <!-- User Info -->
+            <div class="user-info">
+                <div class="user-avatar"></div>
+                <span class="username">{{ currentPost.userEmail }}</span>
+            </div>
+            
+            <!-- Post Media Area -->
+            <div class="post-media-area">
+                <!-- Image -->
+                <img v-if="currentPost.mediaType.startsWith('image/')" :src="currentPost.mediaUrl" :alt="currentPost.caption"
+                    class="preview-media">
+                
+                <!-- Video -->
+                <video v-else-if="currentPost.mediaType.startsWith('video/')" :src="currentPost.mediaUrl" class="preview-media"
+                    controls></video>
+                
+                <!-- Audio -->
+                <div v-else-if="currentPost.mediaType.startsWith('audio/')" class="audio-preview">
+                    <div class="audio-waveform">
+                        <img src="/src/components/icons/sound.gif" alt="Sound" class="voice-icon">
                     </div>
-                    <div class="post-actions" v-if="isOwnPost(post)">
-                        <button class="action-btn delete-btn" @click="handleDeletePost(post)"
-                            :disabled="deletingPost === post.id">
-                            {{ deletingPost === post.id ? '⏳' : '🗑️' }}
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Post Media -->
-                <div v-if="post.mediaUrl" class="post-media">
-                    <img v-if="post.mediaType.startsWith('image/')" :src="post.mediaUrl" :alt="post.caption"
-                        class="media-image">
-                    <video v-else-if="post.mediaType.startsWith('video/')" :src="post.mediaUrl" class="media-video"
-                        controls></video>
-                </div>
-
-                <!-- Post Caption -->
-                <div v-if="post.caption" class="post-caption">
-                    {{ post.caption }}
-                </div>
-
-                <!-- Post Footer -->
-                <div class="post-footer">
-                    <div class="post-stats">
-                        <span class="stat-item">❤️ {{ post.likes || 0 }}</span>
-                        <span class="stat-item">💬 {{ post.comments || 0 }}</span>
+                    <div class="audio-controls">
+                        <audio :src="currentPost.mediaUrl" class="audio-player" controls></audio>
                     </div>
                 </div>
+                
+                <!-- Other Files -->
+                <div v-else-if="currentPost.mediaUrl" class="file-info">
+                    <div class="file-icon">📄</div>
+                    <div class="file-name">{{ currentPost.fileName || 'File' }}</div>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <button class="control-btn delete-btn" @click="handleDeletePost(currentPost)" 
+                    :disabled="deletingPost === currentPost.id" v-if="isOwnPost(currentPost)">
+                    <img v-if="deletingPost === currentPost.id" src="/src/components/icons/loading.png" alt="Loading" class="control-icon loading">
+                    <img v-else src="/src/components/icons/delete.png" alt="Delete" class="control-icon">
+                </button>
+                <div v-else class="control-spacer"></div>
+                
+                <div class="input-wrapper" v-if="currentPost.caption && currentPost.caption.trim()">
+                    <div class="caption-display">{{ currentPost.caption }}</div>
+                </div>
+                <div v-else class="input-spacer"></div>
+                
+                <button class="control-btn option-btn">
+                    <img src="/src/components/icons/options.png" alt="Options" class="control-icon">
+                </button>
             </div>
         </div>
 
-        <!-- Navigation Controls for Mobile -->
-        <div v-if="posts.length > maxDisplayedPosts" class="mobile-nav-controls">
-            <button class="nav-control-btn" @click="previousPage" :disabled="currentPage === 0">
-                ◀
-            </button>
-            <span class="page-indicator">{{ currentPage + 1 }} / {{ totalPages }}</span>
-            <button class="nav-control-btn" @click="nextPage" :disabled="currentPage >= totalPages - 1">
-                ▶
-            </button>
+        <!-- Scroll Hint -->
+        <div v-if="posts.length > 1" class="scroll-hint">
+            <div class="scroll-arrow" :class="{ visible: showScrollHint }">
+                {{ currentIndex < posts.length - 1 ? '↓' : '↑' }}
+            </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useFirestore } from '@/composables/useFirestore.js'
 import { useAuthStore } from '@/stores/authStore'
 import { useSettings } from '@/composables/useSettings.js'
@@ -87,39 +105,102 @@ const { t, currentLanguage } = useSettings()
 // Reactive state
 const posts = ref([])
 const deletingPost = ref(null)
-const currentPage = ref(0)
-const maxDisplayedPosts = ref(3) // Show only 3 posts at a time for mobile
+const currentIndex = ref(0)
+const showScrollHint = ref(true)
+const touchStartY = ref(0)
+const isScrolling = ref(false)
 
 // Computed properties
-const totalPages = computed(() => Math.ceil(posts.value.length / maxDisplayedPosts.value))
-const displayedPosts = computed(() => {
-    const start = currentPage.value * maxDisplayedPosts.value
-    const end = start + maxDisplayedPosts.value
-    return posts.value.slice(start, end)
-})
+const currentPost = computed(() => posts.value[currentIndex.value] || null)
+
+// Scroll handling
+let scrollTimeout = null
+let hintTimeout = null
+
+const handleScroll = (event) => {
+    if (isScrolling.value || posts.value.length <= 1) return
+    
+    event.preventDefault()
+    isScrolling.value = true
+    
+    // Clear existing timeout
+    if (scrollTimeout) {
+        clearTimeout(scrollTimeout)
+    }
+    
+    const delta = event.deltaY
+    
+    if (delta > 0) {
+        // Scroll down - next post
+        if (currentIndex.value < posts.value.length - 1) {
+            currentIndex.value++
+        }
+    } else {
+        // Scroll up - previous post
+        if (currentIndex.value > 0) {
+            currentIndex.value--
+        }
+    }
+    
+    hideScrollHint()
+    
+    // Prevent rapid scrolling
+    scrollTimeout = setTimeout(() => {
+        isScrolling.value = false
+    }, 500)
+}
+
+// Touch handling for mobile
+const handleTouchStart = (event) => {
+    touchStartY.value = event.touches[0].clientY
+}
+
+const handleTouchEnd = (event) => {
+    if (posts.value.length <= 1) return
+    
+    const touchEndY = event.changedTouches[0].clientY
+    const deltaY = touchStartY.value - touchEndY
+    
+    // Minimum swipe distance
+    if (Math.abs(deltaY) < 50) return
+    
+    if (deltaY > 0) {
+        // Swipe up - next post
+        if (currentIndex.value < posts.value.length - 1) {
+            currentIndex.value++
+        }
+    } else {
+        // Swipe down - previous post
+        if (currentIndex.value > 0) {
+            currentIndex.value--
+        }
+    }
+    
+    hideScrollHint()
+}
+
+const hideScrollHint = () => {
+    showScrollHint.value = false
+    
+    // Show hint again after 3 seconds
+    if (hintTimeout) {
+        clearTimeout(hintTimeout)
+    }
+    hintTimeout = setTimeout(() => {
+        showScrollHint.value = true
+    }, 3000)
+}
 
 // Methods
 const loadPosts = async () => {
     try {
         clearError()
-        const fetchedPosts = await getPosts(20) // Load more posts but show limited
+        const fetchedPosts = await getPosts(20)
         posts.value = fetchedPosts
-        currentPage.value = 0 // Reset to first page
+        currentIndex.value = 0
         console.log('Posts loaded:', fetchedPosts)
     } catch (loadError) {
         console.error('Failed to load posts:', loadError)
-    }
-}
-
-const nextPage = () => {
-    if (currentPage.value < totalPages.value - 1) {
-        currentPage.value++
-    }
-}
-
-const previousPage = () => {
-    if (currentPage.value > 0) {
-        currentPage.value--
     }
 }
 
@@ -139,9 +220,9 @@ const handleDeletePost = async (post) => {
         // Remove post from local array
         posts.value = posts.value.filter(p => p.id !== post.id)
 
-        // Adjust current page if needed
-        if (displayedPosts.value.length === 0 && currentPage.value > 0) {
-            currentPage.value--
+        // Adjust current index if needed
+        if (currentIndex.value >= posts.value.length && posts.value.length > 0) {
+            currentIndex.value = posts.value.length - 1
         }
 
         console.log('Post deleted successfully:', post.id)
@@ -156,7 +237,6 @@ const formatDate = (timestamp) => {
     if (!timestamp) return ''
 
     try {
-        // Handle Firestore Timestamp
         const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
         return date.toLocaleDateString(currentLanguage.value === 'EN' ? 'en-US' : 'vi-VN', {
             year: 'numeric',
@@ -172,12 +252,34 @@ const formatDate = (timestamp) => {
 }
 
 const isOwnPost = (post) => {
-    return user.value && post.userId === user.value.uid
+    const result = user.value && post.userId === user.value.uid
+    console.log('Debug isOwnPost:', {
+        userExists: !!user.value,
+        currentUserId: user.value?.uid,
+        postUserId: post.userId,
+        isOwn: result
+    })
+    return result
 }
 
 // Load posts on component mount
 onMounted(() => {
     loadPosts()
+    
+    // Show hint initially
+    setTimeout(() => {
+        showScrollHint.value = true
+    }, 1000)
+})
+
+// Cleanup
+onUnmounted(() => {
+    if (scrollTimeout) {
+        clearTimeout(scrollTimeout)
+    }
+    if (hintTimeout) {
+        clearTimeout(hintTimeout)
+    }
 })
 </script>
 
@@ -188,6 +290,8 @@ onMounted(() => {
     flex-direction: column;
     padding: 15px;
     overflow: hidden;
+    position: relative;
+    user-select: none;
 }
 
 /* Loading State */
@@ -209,7 +313,6 @@ onMounted(() => {
     from {
         transform: rotate(0deg);
     }
-
     to {
         transform: rotate(360deg);
     }
@@ -272,188 +375,234 @@ onMounted(() => {
     text-align: center;
 }
 
-/* Posts Container - Fixed height, no scroll */
-.posts-container {
+/* Single Post Container - Match StatusCreation layout */
+.single-post-container {
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    flex: 1;
-    overflow: hidden;
-    min-height: 0;
+    padding: 0 25px;
+    gap: 20px;
 }
 
-/* Post Item */
-.post-item {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: var(--border-radius);
-    padding: 12px;
-    transition: var(--transition);
-    flex-shrink: 0;
-}
-
-/* Post Header */
-.post-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
+/* User Info - Match StatusCreation */
 .user-info {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-}
-
-.user-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.2);
     flex-shrink: 0;
 }
 
-.user-details {
+.user-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.username {
+    color: var(--theme-color);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Post Media Area - Fixed height */
+.post-media-area {
+    flex: 1;
+    border-radius: var(--border-radius);
+    background: linear-gradient(135deg, var(--theme-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    min-height: 300px; /* Fixed minimum height */
+}
+
+/* Media Preview - Consistent sizing */
+.preview-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+}
+
+/* Audio Preview - Match StatusCreation */
+.audio-preview {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    padding: 30px 20px 20px 20px;
 }
 
-.user-email {
-    color: var(--theme-color);
-    font-size: 13px;
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.post-date {
-    color: var(--text-secondary);
-    font-size: 10px;
-}
-
-.post-actions {
+.audio-waveform {
+    flex: 1;
     display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.voice-icon {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+}
+
+.audio-controls {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.audio-player {
+    width: 85%;
+    height: 35px;
+}
+
+/* File Info - Match StatusCreation */
+.file-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    text-align: center;
+}
+
+.file-icon {
+    font-size: 40px;
+}
+
+.file-name {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+/* Controls - Match StatusCreation layout */
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 5px;
     flex-shrink: 0;
 }
 
-.action-btn {
-    width: 22px;
-    height: 22px;
-    border: none;
+.control-btn {
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.2);
-    color: var(--text-primary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    transition: var(--transition);
-}
-
-.action-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Post Media - Compact for mobile */
-.post-media {
-    margin-bottom: 10px;
-    border-radius: var(--border-radius-small);
-    overflow: hidden;
-}
-
-.media-image,
-.media-video {
-    width: 100%;
-    height: auto;
-    max-height: 180px;
-    object-fit: cover;
-    display: block;
-}
-
-.media-video {
-    background: #000;
-}
-
-/* Post Caption */
-.post-caption {
-    color: var(--text-light);
-    font-size: 13px;
-    line-height: 1.4;
-    margin-bottom: 10px;
-    word-wrap: break-word;
-    overflow: hidden;
-    display: -webkit-box;
-    line-clamp: 3;
-    /* Chuẩn hiện đại */
-    -webkit-line-clamp: 3;
-    /* Hỗ trợ Safari/Chrome cũ */
-    -webkit-box-orient: vertical;
-}
-
-/* Post Footer */
-.post-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 8px;
-}
-
-.post-stats {
-    display: flex;
-    gap: 12px;
-}
-
-.stat-item {
-    color: var(--text-secondary);
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-}
-
-/* Mobile Navigation Controls */
-.mobile-nav-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    padding: 12px 0;
-    flex-shrink: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 10px;
-}
-
-.nav-control-btn {
-    width: 32px;
-    height: 32px;
     border: none;
-    border-radius: 50%;
     background: linear-gradient(135deg, var(--theme-color));
     color: var(--text-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
     transition: var(--transition);
+    font-weight: bold;
 }
 
-.nav-control-btn:disabled {
-    opacity: 0.3;
+.delete-btn {
+    /* Position like close-btn in StatusCreation */
+}
+
+.option-btn {
+    /* Position like post-btn in StatusCreation */
+}
+
+.control-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+.control-icon.loading {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.control-btn:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
-.page-indicator {
-    color: var(--theme-color);
-    font-size: 12px;
-    font-weight: 600;
-    min-width: 60px;
+/* Input wrapper for caption */
+.input-wrapper {
+    flex: 1;
+    max-width: 200px;
+    display: flex;
+    justify-content: center;
+}
+
+.caption-display {
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: var(--border-radius-large);
+    background: linear-gradient(135deg, var(--theme-color));
+    color: var(--text-primary);
+    font-size: 14px;
     text-align: center;
+    word-wrap: break-word;
+    overflow: hidden;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* Scroll Hint */
+.scroll-hint {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.scroll-arrow {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--theme-color);
+    font-size: 16px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.scroll-arrow.visible {
+    opacity: 0.8;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-5px);
+    }
+    60% {
+        transform: translateY(-3px);
+    }
 }
 
 /* Responsive Design */
@@ -462,13 +611,14 @@ onMounted(() => {
         padding: 12px;
     }
 
-    .post-item {
-        padding: 10px;
+    .single-post-container {
+        padding: 0 20px;
     }
 
-    .media-image,
-    .media-video {
-        max-height: 160px;
+    .scroll-arrow {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
     }
 }
 
@@ -477,37 +627,21 @@ onMounted(() => {
         padding: 10px;
     }
 
-    .post-item {
-        padding: 8px;
+    .single-post-container {
+        padding: 0 15px;
     }
 
-    .user-email {
-        font-size: 12px;
+    .username {
+        font-size: 13px;
     }
 
-    .post-caption {
-        font-size: 12px;
+    .caption-display {
+        font-size: 13px;
+        padding: 10px 15px;
     }
 
-    .media-image,
-    .media-video {
-        max-height: 140px;
-    }
-
-    .mobile-nav-controls {
-        gap: 12px;
-        padding: 10px 0;
-    }
-
-    .nav-control-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
-    }
-
-    .page-indicator {
-        font-size: 11px;
-        min-width: 50px;
+    .scroll-hint {
+        bottom: 20px;
     }
 }
 </style>
