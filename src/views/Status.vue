@@ -25,7 +25,6 @@ import HomeMenu from '@/components/HomeMenu.vue'
 import StatusCreation from '@/components/StatusCreation.vue'
 // import StatusCustom from '@/components/StatusCustom.vue'
 import { useMobileSwipe } from '@/composables/useMobileSwipe.js'
-import NavLeft from '@/components/NavLeft.vue'
 
 const { getContainerClass } = useMobileSwipe()
 </script>
