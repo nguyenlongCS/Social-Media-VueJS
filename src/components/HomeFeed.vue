@@ -59,7 +59,7 @@
             
             <!-- Controls -->
             <div class="controls">
-                <!-- Delete Button for own posts / Like Button for others -->
+                <!-- Delete/Like Button -->
                 <button v-if="isOwnPost(currentPost)" 
                         class="control-btn delete-btn" 
                         @click="handleDeletePost(currentPost)" 
@@ -81,7 +81,7 @@
                          class="control-icon">
                 </button>
                 
-                <!-- Caption Display - Always show wrapper -->
+                <!-- Caption Display -->
                 <div class="input-wrapper">
                     <div class="caption-display" :class="{ 'no-caption': !currentPost.caption?.trim() }">
                         {{ currentPost.caption?.trim() || (currentLanguage === 'EN' ? 'No Caption' : 'Không có chú thích') }}
@@ -95,12 +95,14 @@
             </div>
         </div>
 
-        <!-- Scroll Hint -->
-        <div v-if="posts.length > 1" class="scroll-hint">
-            <div class="scroll-arrow" :class="{ visible: showScrollHint }">
-                {{ currentIndex < posts.length - 1 ? '↓' : '↑' }}
-            </div>
-        </div>
+        <!-- Footer Component -->
+        <Footer 
+            :show-scroll-arrow="posts.length > 1"
+            :is-scroll-arrow-visible="showScrollHint"
+            :scroll-direction="currentIndex < posts.length - 1 ? 'down' : 'up'"
+            :current-index="currentIndex"
+            :total-posts="posts.length"
+        />
     </div>
 </template>
 
@@ -109,12 +111,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useFirestore } from '@/composables/useFirestore.js'
 import { useAuthStore } from '@/stores/authStore'
 import { useSettings } from '@/composables/useSettings.js'
+import Footer from '@/components/Footer.vue'
 
 const { getPosts, deletePost, loading, error, clearError } = useFirestore()
 const { user } = useAuthStore()
 const { t, currentLanguage } = useSettings()
 
-// Reactive state
+// State
 const posts = ref([])
 const deletingPost = ref(null)
 const currentIndex = ref(0)
@@ -122,7 +125,7 @@ const showScrollHint = ref(true)
 const touchStartY = ref(0)
 const isScrolling = ref(false)
 
-// Computed properties
+// Computed
 const currentPost = computed(() => posts.value[currentIndex.value] || null)
 
 // Scroll handling
@@ -152,7 +155,6 @@ const handleScroll = (event) => {
     }, 500)
 }
 
-// Touch handling for mobile
 const handleTouchStart = (event) => {
     touchStartY.value = event.touches[0].clientY
 }
@@ -224,7 +226,6 @@ const isOwnPost = (post) => {
     return user.value && post && post.userId === user.value.uid
 }
 
-// Display username with @gmail.com removed, show "Me/Tôi" for own posts
 const displayUsername = (post) => {
     if (!post?.userEmail) return ''
     
@@ -235,13 +236,12 @@ const displayUsername = (post) => {
     return post.userEmail.replace('@gmail.com', '')
 }
 
-// Handle like action (placeholder for future implementation)
 const handleLikePost = (post) => {
     console.log('Like post:', post.id)
     // TODO: Implement like functionality
 }
 
-// Load posts on component mount
+// Lifecycle
 onMounted(() => {
     loadPosts()
     
@@ -250,7 +250,6 @@ onMounted(() => {
     }, 1000)
 })
 
-// Cleanup
 onUnmounted(() => {
     if (scrollTimeout) clearTimeout(scrollTimeout)
     if (hintTimeout) clearTimeout(hintTimeout)
@@ -262,105 +261,96 @@ onUnmounted(() => {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 15px;
+    padding: 1vh 1.5vw;
+    padding-bottom: 8vh; /* Space for footer */
     overflow: hidden;
     position: relative;
     user-select: none;
 }
 
-/* Loading State */
-.loading-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    gap: 15px;
-}
-
-.loading-spinner {
-    font-size: 24px;
-    animation: spin 1s linear infinite;
-}
-
-.loading-text {
-    color: var(--theme-color);
-    font-size: 14px;
-    font-weight: 500;
-}
-
-/* Error State */
-.error-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    gap: 15px;
-}
-
-.error-text {
-    color: #ff0000;
-    font-size: 14px;
-    text-align: center;
-}
-
-.retry-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: var(--border-radius);
-    background: linear-gradient(135deg, var(--theme-color));
-    color: var(--text-primary);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-/* Empty State */
+/* States */
+.loading-state,
+.error-state,
 .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex: 1;
-    gap: 15px;
+    gap: 1.5vh;
+}
+
+.loading-spinner {
+    font-size: 1.5vw;
+    min-font-size: 24px;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    color: var(--theme-color);
+    font-size: 1vw;
+    min-font-size: 14px;
+    font-weight: 500;
+}
+
+.error-text {
+    color: #ff0000;
+    font-size: 1vw;
+    min-font-size: 14px;
+    text-align: center;
+}
+
+.retry-button {
+    padding: 1vh 2vw;
+    border: none;
+    border-radius: var(--border-radius);
+    background: linear-gradient(135deg, var(--theme-color));
+    color: var(--text-primary);
+    font-size: 1vw;
+    min-font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
 }
 
 .empty-icon {
-    width: 48px;
-    height: 48px;
+    width: 3vw;
+    height: 3vw;
+    min-width: 48px;
+    min-height: 48px;
     object-fit: contain;
     opacity: 0.5;
 }
 
 .empty-text {
     color: var(--text-secondary);
-    font-size: 16px;
+    font-size: 1.2vw;
+    min-font-size: 16px;
     text-align: center;
 }
 
-/* Single Post Container */
+/* Post Container */
 .single-post-container {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 0 25px;
-    gap: 20px;
+    padding: 0 2vw;
+    gap: 1.5vh;
 }
 
-/* User Info */
 .user-info {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 0.8vw;
     flex-shrink: 0;
 }
 
 .user-avatar {
-    width: 35px;
-    height: 35px;
+    width: 2.5vw;
+    height: 2.5vw;
+    min-width: 35px;
+    min-height: 35px;
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.2);
 }
@@ -368,10 +358,11 @@ onUnmounted(() => {
 .username {
     color: var(--theme-color);
     font-weight: 600;
-    font-size: 14px;
+    font-size: 1vw;
+    min-font-size: 14px;
 }
 
-/* Post Media Area */
+/* Media Area */
 .post-media-area {
     flex: 1;
     border-radius: var(--border-radius);
@@ -381,10 +372,9 @@ onUnmounted(() => {
     justify-content: center;
     overflow: hidden;
     position: relative;
-    min-height: 300px;
+    min-height: 25vh;
 }
 
-/* Media Preview */
 .preview-media {
     width: 100%;
     height: 100%;
@@ -392,7 +382,6 @@ onUnmounted(() => {
     border-radius: var(--border-radius);
 }
 
-/* Audio Preview */
 .audio-preview {
     display: flex;
     flex-direction: column;
@@ -400,7 +389,7 @@ onUnmounted(() => {
     justify-content: space-between;
     width: 100%;
     height: 100%;
-    padding: 30px 20px 20px 20px;
+    padding: 2vh 1.5vw;
 }
 
 .audio-waveform {
@@ -411,8 +400,10 @@ onUnmounted(() => {
 }
 
 .voice-icon {
-    width: 120px;
-    height: 120px;
+    width: 8vw;
+    height: 8vw;
+    min-width: 120px;
+    min-height: 120px;
     object-fit: contain;
 }
 
@@ -424,27 +415,29 @@ onUnmounted(() => {
 
 .audio-player {
     width: 85%;
-    height: 35px;
+    height: 2.5vh;
+    min-height: 35px;
 }
 
-/* File Info */
 .file-info {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 20px;
+    gap: 1vh;
+    padding: 1.5vh;
     text-align: center;
 }
 
 .file-icon {
-    font-size: 40px;
+    font-size: 3vw;
+    min-font-size: 40px;
 }
 
 .file-name {
     color: var(--text-primary);
     font-weight: 500;
-    font-size: 14px;
+    font-size: 1vw;
+    min-font-size: 14px;
     word-break: break-word;
 }
 
@@ -453,13 +446,15 @@ onUnmounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 5px;
+    gap: 0.5vw;
     flex-shrink: 0;
 }
 
 .control-btn {
-    width: 35px;
-    height: 35px;
+    width: 2.5vw;
+    height: 2.5vw;
+    min-width: 35px;
+    min-height: 35px;
     border-radius: 50%;
     border: none;
     background: linear-gradient(135deg, var(--theme-color));
@@ -474,8 +469,10 @@ onUnmounted(() => {
 }
 
 .control-icon {
-    width: 16px;
-    height: 16px;
+    width: 1.2vw;
+    height: 1.2vw;
+    min-width: 16px;
+    min-height: 16px;
     object-fit: contain;
 }
 
@@ -483,18 +480,9 @@ onUnmounted(() => {
     animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
 .control-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-.like-btn {
-    background: linear-gradient(135deg, var(--theme-color));
 }
 
 .like-btn:hover {
@@ -504,18 +492,20 @@ onUnmounted(() => {
 /* Caption */
 .input-wrapper {
     flex: 1;
-    max-width: 200px;
+    max-width: 15vw;
+    min-width: 200px;
     display: flex;
     justify-content: center;
 }
 
 .caption-display {
     width: 100%;
-    padding: 12px 20px;
+    padding: 1vh 1.5vw;
     border-radius: var(--border-radius-large);
     background: linear-gradient(135deg, var(--theme-color));
     color: var(--text-primary);
-    font-size: 14px;
+    font-size: 1vw;
+    min-font-size: 14px;
     text-align: center;
     word-wrap: break-word;
     overflow: hidden;
@@ -529,79 +519,37 @@ onUnmounted(() => {
     opacity: 0.5;
 }
 
-/* Scroll Hint */
-.scroll-hint {
-    position: absolute;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
+/* Animations */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
-.scroll-arrow {
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--theme-color);
-    font-size: 16px;
-    font-weight: bold;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.scroll-arrow.visible {
-    opacity: 0.8;
-    animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-5px); }
-    60% { transform: translateY(-3px); }
-}
-
-/* Responsive Design */
-@media screen and (max-width: 768px) {
-    #container-home-feed {
-        padding: 12px;
-    }
-
-    .single-post-container {
-        padding: 0 20px;
-    }
-
-    .scroll-arrow {
-        width: 28px;
-        height: 28px;
-        font-size: 14px;
-    }
-}
-
+/* Mobile Responsive */
 @media screen and (max-width: 480px) {
     #container-home-feed {
-        padding: 10px;
+        padding: 1vh 3vw;
+        padding-bottom: 12vh; /* More space for footer on mobile */
     }
 
     .single-post-container {
-        padding: 0 15px;
+        padding: 0 2vw;
     }
 
     .username {
-        font-size: 13px;
+        font-size: 3.5vw;
+        min-font-size: 13px;
     }
 
     .caption-display {
-        font-size: 13px;
-        padding: 10px 15px;
+        font-size: 3.5vw;
+        min-font-size: 13px;
+        padding: 1.5vh 3vw;
     }
 
-    .scroll-hint {
-        bottom: 20px;
+    .input-wrapper {
+        max-width: 50vw;
+        min-width: unset;
     }
 }
 </style>

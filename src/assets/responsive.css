@@ -1,4 +1,4 @@
-/* Base - Disable all scrolling globally */
+/* Global No-Scroll Policy */
 html, body {
     overflow: hidden;
     height: 100vh;
@@ -6,88 +6,7 @@ html, body {
     width: 100%;
 }
 
-/* Tablet Styles */
-@media screen and (max-width: 1024px) {
-    :root {
-        --container-gap: 20px;
-        --container-padding: 15px;
-    }
-    
-    .login-page,
-    .home-page {
-        max-width: 900px;
-        height: 100vh;
-        margin-top: calc(var(--nav-height) + 15px);
-        overflow: hidden;
-    }
-    
-    .container-main {
-        padding: 30px 20px;
-        overflow: hidden;
-    }
-    
-    .container-mid-nav {
-        width: min(300px, calc(100vw - 30px));
-    }
-    
-    .container-right-nav {
-        padding: 10px 15px;
-        gap: 8px;
-    }
-}
-
-/* Mobile Landscape */
-@media screen and (max-width: 768px) {
-    :root {
-        --container-gap: 15px;
-        --container-padding: 10px;
-        --nav-height: 50px;
-    }
-    
-    .login-page,
-    .home-page {
-        grid-template-columns: 0.8fr 1.4fr 0.8fr;
-        max-width: 700px;
-        height: 100vh;
-        margin-top: calc(var(--nav-height) + 10px);
-        overflow: hidden;
-    }
-    
-    .container-main {
-        padding: 25px 15px;
-        overflow: hidden;
-    }
-    
-    .container-mid-nav {
-        width: min(280px, calc(100vw - 20px));
-    }
-    
-    .container-right-nav {
-        padding: 8px 10px;
-        gap: 6px;
-    }
-    
-    /* Smaller nav buttons on mobile */
-    .nav-button,
-    .nav-circle {
-        height: 18px;
-        font-size: 12px;
-    }
-    
-    .nav-button {
-        padding: 0 10px;
-    }
-    
-    .logout-button {
-        width: 80px;
-    }
-    
-    .language-button {
-        width: 60px;
-    }
-}
-
-/* Mobile Portrait - iPhone 14, Galaxy Z Fold, etc. */
+/* Mobile Portrait - Single Breakpoint for Ultimate Simplicity */
 @media screen and (max-width: 480px) {
     :root {
         --container-gap: 0px;
@@ -96,7 +15,7 @@ html, body {
         --nav-mid-height: 50px;
     }
     
-    /* Fixed mobile layout - no scrolling */
+    /* Mobile Layout - Complete Override */
     .login-page,
     .home-page {
         display: grid;
@@ -113,7 +32,7 @@ html, body {
         left: 0;
     }
     
-    /* Mobile containers - full screen, no scroll */
+    /* Mobile Containers - Single View System */
     .container-left,
     .container-main, 
     .container-right {
@@ -130,7 +49,7 @@ html, body {
         left: 0;
     }
     
-    /* Default: Show main container */
+    /* Default State - Show Main */
     .container-left {
         transform: translateX(-100%);
         opacity: 0;
@@ -150,7 +69,7 @@ html, body {
         pointer-events: none;
     }
     
-    /* Show left container */
+    /* Show Left Container */
     .show-left .container-left {
         transform: translateX(0);
         opacity: 1;
@@ -167,7 +86,7 @@ html, body {
         pointer-events: none;
     }
     
-    /* Show right container */
+    /* Show Right Container */
     .show-right .container-left {
         transform: translateX(-200%);
         opacity: 0;
@@ -184,7 +103,7 @@ html, body {
         pointer-events: auto;
     }
     
-    /* NavRight - Fixed top center */
+    /* NavRight - Fixed Top Center */
     .container-right-nav {
         position: fixed;
         top: 0;
@@ -207,29 +126,29 @@ html, body {
     
     /* NavMid - Below NavRight */
     .container-mid-nav {
-        position: fixed;
-        top: var(--nav-height);
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1500;
-        width: calc(100vw - 40px);
-        max-width: 350px;
-        height: var(--nav-mid-height);
-        background: linear-gradient(135deg, var(--theme-color));
-        border-radius: 25px;
-        padding: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+        position: fixed !important;
+        top: var(--nav-height) !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 1500 !important;
+        width: calc(100vw - 40px) !important;
+        max-width: 350px !important;
+        height: var(--nav-mid-height) !important;
+        background: linear-gradient(135deg, var(--theme-color)) !important;
+        border-radius: 25px !important;
+        padding: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4) !important;
     }
     
-    /* Hide NavMid on login page */
+    /* Hide NavMid on Login Page */
     .login-page .container-mid-nav {
-        display: none;
+        display: none !important;
     }
     
-    /* Adjust login page layout */
+    /* Adjust Login Page Layout */
     .login-page .container-left,
     .login-page .container-main, 
     .login-page .container-right {
@@ -237,7 +156,7 @@ html, body {
         margin-top: var(--nav-height);
     }
     
-    /* Nav elements sizing for mobile */
+    /* Nav Elements - Mobile Optimized */
     .nav-button,
     .nav-circle {
         height: 18px;
@@ -256,7 +175,7 @@ html, body {
         width: 50px;
     }
     
-    /* NavMid items for mobile */
+    /* NavMid Items */
     .nav-item {
         width: 40px;
         height: 40px;
@@ -285,122 +204,7 @@ html, body {
     }
 }
 
-/* iPhone 14 Pro Max, Galaxy Z Fold open */
-@media screen and (max-width: 430px) and (min-height: 850px) {
-    :root {
-        --nav-height: 60px;
-        --nav-mid-height: 55px;
-    }
-    
-    .container-right-nav {
-        height: var(--nav-height);
-        padding: 12px 25px;
-    }
-    
-    .container-mid-nav {
-        height: var(--nav-mid-height);
-        max-width: 380px;
-    }
-    
-    .nav-item {
-        width: 45px;
-        height: 45px;
-    }
-    
-    .nav-icon {
-        width: 20px;
-        height: 20px;
-    }
-}
-
-/* Extra Small Devices - iPhone SE, small Android */
-@media screen and (max-width: 375px) {
-    :root {
-        --nav-height: 50px;
-        --nav-mid-height: 45px;
-    }
-    
-    .container-right-nav {
-        min-width: 280px;
-        padding: 8px 15px;
-    }
-    
-    .container-mid-nav {
-        width: calc(100vw - 30px);
-        max-width: 320px;
-        height: var(--nav-mid-height);
-    }
-    
-    .nav-button,
-    .nav-circle {
-        height: 16px;
-        font-size: 11px;
-    }
-    
-    .logout-button {
-        width: 65px;
-    }
-    
-    .language-button {
-        width: 45px;
-    }
-    
-    .nav-item {
-        width: 38px;
-        height: 38px;
-    }
-    
-    .nav-icon {
-        width: 16px;
-        height: 16px;
-    }
-}
-
-/* Ultra small devices */
-@media screen and (max-width: 320px) {
-    :root {
-        --nav-height: 45px;
-        --nav-mid-height: 40px;
-    }
-    
-    .container-right-nav {
-        min-width: 260px;
-        padding: 6px 12px;
-    }
-    
-    .container-mid-nav {
-        width: calc(100vw - 20px);
-        max-width: 280px;
-        height: var(--nav-mid-height);
-        padding: 8px;
-    }
-    
-    .nav-button,
-    .nav-circle {
-        height: 14px;
-        font-size: 10px;
-    }
-    
-    .logout-button {
-        width: 60px;
-    }
-    
-    .language-button {
-        width: 40px;
-    }
-    
-    .nav-item {
-        width: 35px;
-        height: 35px;
-    }
-    
-    .nav-icon {
-        width: 14px;
-        height: 14px;
-    }
-}
-
-/* Disable scrolling on all components */
+/* Disable All Component Scrolling */
 #container-home-feed,
 #container-menu-home,
 #container-form-login,
@@ -409,7 +213,7 @@ html, body {
     overflow: hidden !important;
 }
 
-/* Remove scrollbar styling since we're removing scroll */
+/* Remove All Scrollbars */
 .container-left::-webkit-scrollbar,
 .container-main::-webkit-scrollbar,
 .container-right::-webkit-scrollbar {
@@ -421,61 +225,4 @@ html, body {
 .container-right {
     scrollbar-width: none;
     -ms-overflow-style: none;
-}
-
-/* Desktop NavMid sizing optimization - REMOVED: Handled in NavMid component */
-
-/* High DPI Displays - Optimized */
-@media screen and (min-width: 1200px) and (max-width: 1599px) {
-    :root {
-        --container-gap: 22px;
-        --container-padding: 16px;
-        --nav-height: 50px;
-    }
-    
-    .login-page,
-    .home-page {
-        max-width: 1150px;
-        gap: 22px;
-        height: calc(100vh - var(--nav-height) - 50px);
-        margin-top: calc(var(--nav-height) + 15px);
-        overflow: hidden;
-    }
-    
-    .container-main {
-        padding: 28px 24px;
-        overflow: hidden;
-    }
-    
-    .container-right-nav {
-        padding: 10px 16px;
-        gap: 8px;
-    }
-}
-
-/* Ultra Wide Displays - Controlled sizing */
-@media screen and (min-width: 1600px) {
-    :root {
-        --container-gap: 28px;
-        --container-padding: 20px;
-        --nav-height: 55px;
-    }
-    
-    .login-page,
-    .home-page {
-        max-width: 1300px;
-        height: calc(100vh - var(--nav-height) - 60px);
-        margin-top: calc(var(--nav-height) + 20px);
-        overflow: hidden;
-    }
-    
-    .container-main {
-        padding: 35px 30px;
-        overflow: hidden;
-    }
-    
-    .container-right-nav {
-        padding: 12px 20px;
-        gap: 10px;
-    }
 }

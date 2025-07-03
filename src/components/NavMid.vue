@@ -1,23 +1,18 @@
 <template>
     <div class="container-mid-nav">
-        <button class="nav-item" :class="{ active: activeNavItem === 'profile' }" @click="setActiveNav('profile')"
-            data-tooltip="Profile">
+        <button class="nav-item" :class="{ active: activeNavItem === 'profile' }" @click="setActiveNav('profile')">
             <img src="/src/components/icons/profile.png" alt="Profile" class="nav-icon">
         </button>
-        <button class="nav-item" :class="{ active: activeNavItem === 'friend' }" @click="setActiveNav('friend')"
-            data-tooltip="Friends">
+        <button class="nav-item" :class="{ active: activeNavItem === 'friend' }" @click="setActiveNav('friend')">
             <img src="/src/components/icons/friend.png" alt="Friends" class="nav-icon">
         </button>
-        <button class="nav-item" :class="{ active: activeNavItem === 'home' }" @click="setActiveNav('home')"
-            data-tooltip="Home">
+        <button class="nav-item" :class="{ active: activeNavItem === 'home' }" @click="setActiveNav('home')">
             <img src="/src/components/icons/home.png" alt="Home" class="nav-icon">
         </button>
-        <button class="nav-item" :class="{ active: activeNavItem === 'mess' }" @click="setActiveNav('mess')"
-            data-tooltip="Messages">
+        <button class="nav-item" :class="{ active: activeNavItem === 'mess' }" @click="setActiveNav('mess')">
             <img src="/src/components/icons/mess.png" alt="Messages" class="nav-icon">
         </button>
-        <button class="nav-item" :class="{ active: activeNavItem === 'notification' }"
-            @click="setActiveNav('notification')" data-tooltip="Notifications">
+        <button class="nav-item" :class="{ active: activeNavItem === 'notification' }" @click="setActiveNav('notification')">
             <img src="/src/components/icons/notification.png" alt="Notifications" class="nav-icon">
         </button>
     </div>
@@ -35,6 +30,7 @@ const { getItem, setItem } = useSettings()
 const NAV_ACTIVE_KEY = 'activeNavItem'
 const activeNavItem = ref('home')
 
+// Route mappings
 const navRoutes = {
     home: '/',
     profile: '/profile',
@@ -51,6 +47,7 @@ const routeToNav = {
     '/notification': 'notification'
 }
 
+// Navigation handler
 const setActiveNav = (navItem) => {
     activeNavItem.value = navItem
     const targetRoute = navRoutes[navItem]
@@ -59,6 +56,7 @@ const setActiveNav = (navItem) => {
     }
 }
 
+// Initialize and sync with route
 onMounted(() => {
     const currentNav = routeToNav[route.path]
     if (currentNav) {
@@ -69,6 +67,7 @@ onMounted(() => {
     }
 })
 
+// Watch for changes
 watch(activeNavItem, (newValue) => {
     setItem(NAV_ACTIVE_KEY, newValue)
 }, { immediate: true })
@@ -84,17 +83,16 @@ watch(() => route.path, (newPath) => {
 <style scoped>
 .container-mid-nav {
     position: fixed;
-    top: 10px; /* Adjusted back to reasonable position */
+    top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    /* Desktop/Laptop: Match container-main width */
     width: calc(1.14 * (100vw - 2 * var(--container-gap) - 2 * var(--container-padding)) / 3.14);
-    max-width: calc(1100px * 1.14 / 3.14); /* Match main CSS max-width */
+    max-width: calc(1100px * 1.14 / 3.14);
     min-width: 280px;
-    height: 40px; /* Reduced height */
+    height: 40px;
     background: linear-gradient(135deg, var(--theme-color));
-    border-radius: 20px; /* Reduced radius to match height */
-    padding: 6px; /* Reduced padding */
+    border-radius: 20px;
+    padding: 6px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -107,7 +105,7 @@ watch(() => route.path, (newPath) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px; /* Reduced size */
+    width: 32px;
     height: 32px;
     border-radius: 50%;
     border: none;
@@ -125,42 +123,22 @@ watch(() => route.path, (newPath) => {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.nav-item::before {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: -35px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: var(--transition);
-    pointer-events: none;
-    z-index: 10;
-}
-
 .nav-icon {
-    width: 16px; /* Reduced size */
+    width: 16px;
     height: 16px;
     object-fit: contain;
     transition: var(--transition);
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
-/* Tablet Styles */
+/* Responsive Design */
 @media screen and (max-width: 1024px) {
     .container-mid-nav {
         width: calc(1.4 * (100vw - 2 * var(--container-gap) - 2 * var(--container-padding)) / 3);
         max-width: calc(850px * 1.4 / 3);
         min-width: 260px;
         height: 38px;
-        top: 5px; /* Better tablet position */
+        top: 5px;
     }
     
     .nav-item {
@@ -174,14 +152,13 @@ watch(() => route.path, (newPath) => {
     }
 }
 
-/* Mobile Landscape */
 @media screen and (max-width: 768px) {
     .container-mid-nav {
         width: calc(1.4 * (100vw - 2 * var(--container-gap) - 2 * var(--container-padding)) / 3);
         max-width: calc(700px * 1.4 / 3);
         min-width: 240px;
         height: 36px;
-        top: 3px; /* Better mobile landscape position */
+        top: 3px;
     }
     
     .nav-item {
@@ -195,10 +172,9 @@ watch(() => route.path, (newPath) => {
     }
 }
 
-/* Mobile Portrait - COMPLETELY DIFFERENT LAYOUT */
+/* Mobile Portrait - Complete Override */
 @media screen and (max-width: 480px) {
     .container-mid-nav {
-        /* OVERRIDE ALL DESKTOP STYLES FOR MOBILE */
         position: fixed !important;
         top: var(--nav-height) !important;
         left: 50% !important;
@@ -216,7 +192,7 @@ watch(() => route.path, (newPath) => {
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
     }
     
-    /* Hide NavMid on login page for mobile */
+    /* Hide on login page for mobile */
     .login-page .container-mid-nav {
         display: none !important;
     }
@@ -232,79 +208,57 @@ watch(() => route.path, (newPath) => {
     }
 }
 
-/* iPhone 14 Pro Max, Galaxy Z Fold open */
-@media screen and (max-width: 430px) and (min-height: 850px) {
-    .container-mid-nav {
-        height: calc(var(--nav-mid-height) + 5px);
-        max-width: 350px;
-    }
-    
-    .nav-item {
-        width: 38px;
-        height: 38px;
-    }
-    
-    .nav-icon {
-        width: 18px;
-        height: 18px;
-    }
-}
-
-/* Extra Small Devices */
 @media screen and (max-width: 375px) {
     .container-mid-nav {
-        width: calc(100vw - 30px);
-        max-width: 300px;
-        height: var(--nav-mid-height);
+        width: calc(100vw - 30px) !important;
+        max-width: 300px !important;
     }
     
     .nav-item {
-        width: 33px;
-        height: 33px;
+        width: 33px !important;
+        height: 33px !important;
     }
     
     .nav-icon {
-        width: 15px;
-        height: 15px;
+        width: 15px !important;
+        height: 15px !important;
     }
 }
 
-/* Ultra small devices */
 @media screen and (max-width: 320px) {
     .container-mid-nav {
-        width: calc(100vw - 20px);
-        max-width: 280px;
-        height: var(--nav-mid-height);
-        padding: 6px;
+        width: calc(100vw - 20px) !important;
+        max-width: 280px !important;
+        padding: 6px !important;
     }
     
     .nav-item {
-        width: 30px;
-        height: 30px;
+        width: 30px !important;
+        height: 30px !important;
     }
     
     .nav-icon {
-        width: 14px;
-        height: 14px;
+        width: 14px !important;
+        height: 14px !important;
     }
 }
 
-/* Desktop responsive breakpoints */
+/* Desktop Breakpoints */
 @media screen and (min-width: 1024px) and (max-width: 1399px) {
     .container-mid-nav {
         width: calc(1.14 * (100vw - 2 * var(--container-gap) - 2 * var(--container-padding)) / 3.14);
         max-width: calc(1000px * 1.14 / 3.14);
         height: 38px;
-        top: 8px; /* Better positioning */
+        top: 8px;
     }
 }
 
-@media screen and (min-width: 1400px) and (max-width: 1599px) {
+@media screen and (min-width: 1400px) {
     .container-mid-nav {
         width: calc(1.14 * (100vw - 2 * var(--container-gap) - 2 * var(--container-padding)) / 3.14);
         max-width: calc(1200px * 1.14 / 3.14);
         height: 42px;
-        top: 12px; /* Better positioning */
+        top: 12px;
     }
     
     .nav-item {
@@ -315,25 +269,6 @@ watch(() => route.path, (newPath) => {
     .nav-icon {
         width: 17px;
         height: 17px;
-    }
-}
-
-@media screen and (min-width: 1600px) {
-    .container-mid-nav {
-        width: calc(1.14 * (100vw - 2 * var(--container-gap) - 2 * var(--container-padding)) / 3.14);
-        max-width: calc(1300px * 1.14 / 3.14);
-        height: 45px;
-        top: 15px; /* Better positioning */
-    }
-    
-    .nav-item {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .nav-icon {
-        width: 18px;
-        height: 18px;
     }
 }
 </style>

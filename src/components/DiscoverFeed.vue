@@ -104,97 +104,85 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     flex: 1;
-    gap: 15px;
+    gap: 1.5vh;
 }
 
 .loading-spinner {
-    font-size: 24px;
+    font-size: 1.5vw;
+    min-font-size: 24px;
     animation: spin 1s linear infinite;
 }
 
 .loading-text {
     color: var(--theme-color);
-    font-size: 14px;
+    font-size: 1vw;
+    min-font-size: 14px;
     font-weight: 500;
 }
 
 .error-text {
     color: #ff0000;
-    font-size: 14px;
+    font-size: 1vw;
+    min-font-size: 14px;
     text-align: center;
 }
 
 .retry-button {
-    padding: 10px 20px;
+    padding: 1vh 2vw;
     border: none;
     border-radius: var(--border-radius);
     background: linear-gradient(135deg, var(--theme-color));
     color: var(--text-primary);
-    font-size: 14px;
+    font-size: 1vw;
+    min-font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
 }
 
 .empty-icon {
-    width: 48px;
-    height: 48px;
+    width: 3vw;
+    height: 3vw;
+    min-width: 48px;
+    min-height: 48px;
     object-fit: contain;
     opacity: 0.5;
 }
 
 .empty-text {
     color: var(--text-secondary);
-    font-size: 16px;
+    font-size: 1.2vw;
+    min-font-size: 16px;
     text-align: center;
 }
 
-/* Media Grid - Fixed 2 columns */
+/* Media Grid - Hidden Scrollbar */
 .media-grid {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 20px;
+    padding: 1.5vh 1.5vw;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 1vw;
     align-content: start;
     justify-items: center;
+    
+    /* Hide scrollbar completely */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-/* Custom Scrollbar - Vertical only */
 .media-grid::-webkit-scrollbar {
-    width: 6px;
-}
-
-.media-grid::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-}
-
-.media-grid::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, var(--theme-color));
-    border-radius: 8px;
-}
-
-.media-grid::-webkit-scrollbar-thumb:hover {
-    opacity: 0.8;
-}
-
-.media-grid::-webkit-scrollbar-horizontal {
     display: none;
 }
 
-/* Firefox scrollbar - Vertical only */
-.media-grid {
-    scrollbar-width: thin;
-    scrollbar-color: var(--theme-color) rgba(0, 0, 0, 0.1);
-}
-
-/* Media Items - Fixed size */
+/* Media Items - Responsive Grid */
 .media-item {
-    width: 120px;
-    height: 120px;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 8vw;
+    min-width: 120px;
     border-radius: var(--border-radius-small);
     overflow: hidden;
     cursor: pointer;
@@ -206,7 +194,7 @@ onMounted(() => {
 
 .media-item:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0.3vh 1vh rgba(0, 0, 0, 0.2);
 }
 
 /* Media Thumbnails */
@@ -244,8 +232,9 @@ onMounted(() => {
 
 .play-icon {
     color: white;
-    font-size: 24px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 1.5vw;
+    min-font-size: 24px;
+    text-shadow: 0 0.2vh 0.4vh rgba(0, 0, 0, 0.5);
 }
 
 /* Audio Thumbnail */
@@ -259,7 +248,8 @@ onMounted(() => {
 }
 
 .audio-icon {
-    font-size: 40px;
+    font-size: 2.5vw;
+    min-font-size: 40px;
     opacity: 0.8;
 }
 
@@ -274,7 +264,8 @@ onMounted(() => {
 }
 
 .file-icon {
-    font-size: 40px;
+    font-size: 2.5vw;
+    min-font-size: 40px;
     opacity: 0.8;
 }
 
@@ -289,7 +280,8 @@ onMounted(() => {
 }
 
 .text-icon {
-    font-size: 40px;
+    font-size: 2.5vw;
+    min-font-size: 40px;
     opacity: 0.8;
 }
 
@@ -298,71 +290,28 @@ onMounted(() => {
     to { transform: rotate(360deg); }
 }
 
-/* Responsive Design */
-@media screen and (max-width: 768px) {
-    .media-grid {
-        padding: 15px;
-        gap: 12px;
-    }
-
-    .media-item {
-        width: 100px;
-        height: 100px;
-    }
-
-    .play-icon {
-        font-size: 18px;
-    }
-
-    .audio-icon,
-    .file-icon,
-    .text-icon {
-        font-size: 28px;
-    }
-}
-
+/* Mobile Responsive */
 @media screen and (max-width: 480px) {
     .media-grid {
-        padding: 12px;
-        gap: 10px;
+        padding: 2vh 3vw;
+        gap: 2vw;
     }
 
     .media-item {
-        width: 80px;
-        height: 80px;
+        max-width: 35vw;
+        min-width: 100px;
     }
 
     .play-icon {
-        font-size: 16px;
+        font-size: 5vw;
+        min-font-size: 18px;
     }
 
     .audio-icon,
     .file-icon,
     .text-icon {
-        font-size: 24px;
-    }
-}
-
-/* Large screens */
-@media screen and (min-width: 1200px) {
-    .media-grid {
-        padding: 25px;
-        gap: 18px;
-    }
-
-    .media-item {
-        width: 140px;
-        height: 140px;
-    }
-
-    .play-icon {
-        font-size: 28px;
-    }
-
-    .audio-icon,
-    .file-icon,
-    .text-icon {
-        font-size: 45px;
+        font-size: 8vw;
+        min-font-size: 28px;
     }
 }
 </style>

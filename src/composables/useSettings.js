@@ -1,7 +1,7 @@
-// composables/useSettings.js - Hợp nhất useTheme + useLanguage + useStorage
-import { ref, computed, watch, onMounted } from 'vue'
+// composables/useSettings.js - Optimized for better organization
+import { ref, computed, onMounted } from 'vue'
 
-// Storage keys constants - từ useStorage.js
+// Storage keys
 export const STORAGE_KEYS = {
   LANGUAGE: 'selectedLanguage',
   THEME: 'selectedTheme',
@@ -10,14 +10,14 @@ export const STORAGE_KEYS = {
   REMEMBERED_PASSWORD: 'rememberedPassword'
 }
 
-// Default values - từ useStorage.js
+// Default values
 const DEFAULTS = {
   [STORAGE_KEYS.LANGUAGE]: 'EN',
   [STORAGE_KEYS.THEME]: '#ffeb7c',
   [STORAGE_KEYS.THEME_RGB]: '255, 235, 124'
 }
 
-// Translations - từ useLanguage.js
+// Translations
 const translations = {
   EN: {
     languageBtn: "EN",
@@ -44,7 +44,10 @@ const translations = {
       settings: "settings"
     },
     statusPlaceholder: "What's on your mind?",
-    me: "Me"
+    me: "Me",
+    loading: "Loading...",
+    retry: "Retry",
+    noPosts: "No posts yet"
   },
   VN: {
     languageBtn: "VN",
@@ -71,18 +74,21 @@ const translations = {
       settings: "cài đặt"
     },
     statusPlaceholder: "Bạn đang nghĩ gì?",
-    me: "Tôi"
+    me: "Tôi",
+    loading: "Đang tải...",
+    retry: "Thử lại",
+    noPosts: "Chưa có bài viết"
   }
 }
 
-// Global state - will be initialized when first used
+// Global state (initialized once)
 let currentLanguage = null
 let currentTheme = null
 let currentThemeRgb = null
 let isInitialized = false
 
 export const useSettings = () => {
-  // Generic storage operations - từ useStorage.js
+  // Storage utilities
   const getItem = (key, defaultValue = null) => {
     try {
       const value = localStorage.getItem(key)
@@ -113,31 +119,21 @@ export const useSettings = () => {
     }
   }
 
-  // Initialize global state only once - hợp nhất từ useLanguage.js + useTheme.js
+  // Initialize global state once
   if (!isInitialized) {
-    // Language state
     currentLanguage = ref(getItem(STORAGE_KEYS.LANGUAGE, DEFAULTS[STORAGE_KEYS.LANGUAGE]))
-    
-    // Theme state
-    const savedTheme = {
-      color: getItem(STORAGE_KEYS.THEME, DEFAULTS[STORAGE_KEYS.THEME]),
-      rgb: getItem(STORAGE_KEYS.THEME_RGB, DEFAULTS[STORAGE_KEYS.THEME_RGB])
-    }
-    currentTheme = ref(savedTheme.color)
-    currentThemeRgb = ref(savedTheme.rgb)
-    
+    currentTheme = ref(getItem(STORAGE_KEYS.THEME, DEFAULTS[STORAGE_KEYS.THEME]))
+    currentThemeRgb = ref(getItem(STORAGE_KEYS.THEME_RGB, DEFAULTS[STORAGE_KEYS.THEME_RGB]))
     isInitialized = true
   }
 
-  // Language methods - từ useLanguage.js
+  // Language methods
   const toggleLanguage = () => {
     currentLanguage.value = currentLanguage.value === 'EN' ? 'VN' : 'EN'
     setItem(STORAGE_KEYS.LANGUAGE, currentLanguage.value)
   }
 
-  const t = computed(() => {
-    return translations[currentLanguage.value]
-  })
+  const t = computed(() => translations[currentLanguage.value])
 
   const translate = (key) => {
     const keys = key.split('.')
@@ -151,9 +147,8 @@ export const useSettings = () => {
     return result || key
   }
 
-  // Theme methods - từ useTheme.js
+  // Theme methods
   const initializeTheme = () => {
-    // Áp dụng theme đã lưu khi khởi tạo
     document.documentElement.style.setProperty('--theme-color', currentTheme.value)
     document.documentElement.style.setProperty('--theme-color-rgb', currentThemeRgb.value)
   }
@@ -164,12 +159,11 @@ export const useSettings = () => {
     currentTheme.value = color
     currentThemeRgb.value = rgb
     
-    // Lưu theme đã chọn
     setItem(STORAGE_KEYS.THEME, color)
     setItem(STORAGE_KEYS.THEME_RGB, rgb)
   }
 
-  // Auth storage methods - sử dụng generic storage operations
+  // Auth storage methods
   const getRememberedAuth = () => ({
     email: getItem(STORAGE_KEYS.REMEMBERED_EMAIL),
     password: getItem(STORAGE_KEYS.REMEMBERED_PASSWORD)
@@ -185,13 +179,12 @@ export const useSettings = () => {
     removeItem(STORAGE_KEYS.REMEMBERED_PASSWORD)
   }
 
-  // Batch operations - từ useStorage.js
+  // Batch operations
   const clear = (keys = null) => {
     try {
       if (keys) {
         keys.forEach(key => removeItem(key))
       } else {
-        // Clear all app-specific keys
         Object.values(STORAGE_KEYS).forEach(key => removeItem(key))
       }
     } catch (error) {
@@ -227,35 +220,35 @@ export const useSettings = () => {
     }
   }
 
-  // Tự động khởi tạo theme khi composable được sử dụng - từ useTheme.js
+  // Initialize theme on mount
   onMounted(() => {
     initializeTheme()
   })
 
   return {
-    // Language state and methods
+    // Language
     currentLanguage,
     toggleLanguage,
     t,
     translate,
     
-    // Theme state and methods
+    // Theme
     currentTheme,
     currentThemeRgb,
     changeThemeColor,
     initializeTheme,
     
-    // Storage methods
+    // Storage
     getItem,
     setItem,
     removeItem,
     
-    // Auth storage methods
+    // Auth storage
     getRememberedAuth,
     setRememberedAuth,
     clearRememberedAuth,
     
-    // Utility methods
+    // Utilities
     clear,
     backup,
     restore,

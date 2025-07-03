@@ -4,6 +4,7 @@
 - Ứng dụng mạng xã hội Vue 3 + Firebase
 - Quản lý state bằng Composition API
 - Xác thực Firebase với social login
+- Zoom-safe responsive design
 
 ---
 
@@ -13,19 +14,26 @@
 - useAuth.js: Xử lý đăng nhập, đăng ký, quên mật khẩu, social login
 - useSettings.js: Quản lý theme, ngôn ngữ, localStorage 
 - useValidation.js: Kiểm tra form đầu vào
+- useFirestore.js: Quản lý Firebase Firestore operations
+- useMobileSwipe.js: Xử lý swipe navigation trên mobile
 
 ### src/components/
 - LoginForm.vue: Form đăng nhập/đăng ký với tab
 - LoginSocial.vue: Đăng nhập mạng xã hội + QR 
+- NavLeft.vue: Hiển thị thông tin user
 - NavMid.vue: Thanh điều hướng giữa 5 items
 - NavRight.vue: Theme switcher, ngôn ngữ, logout
-- HomeMenu.vue: Menu điều hướng với các nút (create status, discover, settings,...)
-- StatusCreation.vue: Form tạo status với upload file (ảnh/video), preview, nhập caption.
+- HomeMenu.vue: Menu điều hướng với các nút
+- HomeFeed.vue: Feed hiển thị bài viết với scroll navigation
+- DiscoverFeed.vue: Grid hiển thị media thumbnails
+- StatusCreation.vue: Form tạo status với upload file
 
 ### src/views/
-- Home.vue: Trang chủ 
 - Login.vue: Trang đăng nhập 
+- Home.vue: Trang chủ với feed
 - Status.vue: Trang tạo status
+- Profile.vue, Friend.vue, Mess.vue, Notification.vue: Placeholder pages
+- Discover.vue: Trang khám phá với media grid
 
 ### src/router/
 - index.js: Router với requiresAuth và requiresGuest guards
@@ -34,21 +42,21 @@
 - authStore.js: Quản lý trạng thái Firebase auth
 
 ### src/assets/
-- main.css: CSS variables và responsive 3-column grid
+- main.css: CSS variables và 3-column grid layout
+- responsive.css: Mobile breakpoint và swipe layout
 
 ### Root Files:
-- App.vue: Component gốc 
+- App.vue: Component gốc
 - main.js: Khởi tạo app
-- firebase.js: Cấu hình Firebase
+- firebase.js: Cấu hình Firebase với social auth providers
 - index.html: HTML entry point
-- package.json: Dependencies và scripts
-- vite.config.js: Vite configuration
 
 ---
 
 ## QUY TẮC PHÁT TRIỂN
 
 ### 1. Cấu trúc Composables
+```javascript
 export function useFeatureName() {
   // 1. Imports
   // 2. Global state
@@ -57,16 +65,17 @@ export function useFeatureName() {
   // 5. Lifecycle hooks
   // 6. Return object
 }
+```
 
 ### 2. Xử lý lỗi thống nhất
-- Tập trung error messages trong useAuth
+- Tập trung error messages trong useAuth và useFirestore
 - Hỗ trợ đa ngôn ngữ EN/VN
 - withErrorHandling wrapper cho async operations
 - Loading states quản lý tập trung
 
 ### 3. Quản lý State
 - Global state: Firebase auth qua authStore
-- Settings: localStorage qua useSettings
+- Settings: localStorage qua useSettings  
 - Component state: local reactive trong composables
 - Không truy cập localStorage trực tiếp từ components
 
@@ -86,27 +95,29 @@ export function useFeatureName() {
 - Logout → authStore.logout → Firebase signOut → Router redirect
 - Route Guards → authStore.isLoggedIn → Redirect logic
 
-
 ### 2. Luồng cài đặt
 - Theme Change → useSettings.changeThemeColor → CSS Variables + localStorage
 - Language Toggle → useSettings.toggleLanguage → EN/VN translations + localStorage
 - Storage → useSettings methods → localStorage với error handling
 
-
 ### 3. Luồng validation
 - Form Submit → useValidation → Error return → useAuth.handleError → Display
 - Email/Password validation → Error keys → i18n error messages
-
 
 ### 4. Luồng lưu trữ
 - User Preferences → useSettings → localStorage → Page refresh → Auto restore
 - Auth State → Firebase → authStore → Browser refresh → Firebase restore
 - Remember Login → Encrypted localStorage → Page load → Auto populate
 
-### 5. Luồng Status
-- Tạo bài viết: Status page → Upload file → Create post → Redirect Home
-- Xem bài viết: Home page → Load posts from Firestore → Display feed
-- Xóa bài viết: Click delete → Confirm → Remove file + document
+### 5. Luồng Status/Posts
+- Tạo bài viết: Status page → Upload file → useFirestore.createPostWithFile → Redirect Home
+- Xem bài viết: Home page → useFirestore.getPosts → HomeFeed display
+- Xóa bài viết: Click delete → Confirm → useFirestore.deletePost → Update UI
+- Khám phá: Discover page → useFirestore.getPosts → DiscoverFeed grid display
+
+### 6. Luồng Mobile Navigation
+- Swipe Detection → useMobileSwipe → Container class change → CSS transition
+- Touch Events → handleTouchStart/Move/End → View switching
 
 ---
 
@@ -125,9 +136,70 @@ export function useFeatureName() {
 - Vue 3 Composition API pattern nghiêm ngặt
 - Naming: camelCase cho tất cả
 - CSS variables cho theming
-- Không thêm các hiệu ứng hover,...
+- Không thêm các hiệu ứng hover phức tạp
+- Tách biệt logic và presentation
 
 ### 3. Bảo mật
 - Mã hóa password bằng Base64 trước localStorage
 - Input validation qua useValidation
 - Firebase security rules compliance
+- Error handling không expose sensitive info
+
+### 4. Responsive Design
+- Zoom-safe approach với viewport units (vw, vh)
+- Desktop: 3-column grid layout với flexible sizing
+- Mobile: Single-view với swipe navigation (480px breakpoint)
+- Auto-scaling elements scale với zoom level
+- Fixed layout, no scroll overflow
+
+---
+
+## CHUẨN CSS
+
+### 1. CSS Organization
+```css
+/* 1. CSS Variables (zoom-safe với vw/vh units) */
+/* 2. Global reset & base styles */
+/* 3. Layout styles (grid containers) */
+/* 4. Universal component styles */
+/* 5. Single mobile breakpoint (@media max-width: 480px) */
+```
+
+### 2. Zoom-Safe CSS Variables
+```css
+:root {
+    /* Layout - Viewport Units */
+    --container-gap: 1.5vw;
+    --container-padding: 1vw;
+    --nav-height: 3.5vh;
+    
+    /* Theme Colors */
+    --theme-color: #ffeb7c;
+    --bg-primary: #0a0a0a;
+    --text-primary: #000;
+    
+    /* Fixed Values */
+    --border-radius: 20px;
+    --transition: all 0.3s ease;
+}
+```
+
+### 3. Universal Sizing Strategy
+- Text: `font-size: 1vw; min-font-size: 12px; max-font-size: 16px;`
+- Buttons: `padding: 1vh 1.5vw; height: 2.5vh;`
+- Icons: `width: 1.2vw; min-width: 14px; max-width: 20px;`
+- Containers: `width: 100%; height: 100%; overflow: hidden;`
+
+### 4. Layout Standards
+- Desktop: CSS Grid 3-column (1fr 1.14fr 1fr)
+- Mobile: Single column với absolute positioning
+- Navigation: Fixed positioning với viewport units
+- No scroll: `overflow: hidden !important` everywhere
+
+### 5. CSS Best Practices
+- Viewport units cho all spacing và sizing
+- Min/max constraints cho text readability
+- Flex/Grid cho layout
+- CSS custom properties cho theming
+- No duplicate selectors
+- Hardware acceleration với transform

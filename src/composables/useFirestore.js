@@ -1,4 +1,4 @@
-// composables/useFirestore.js - Quản lý Firebase Firestore
+// composables/useFirestore.js - Optimized for better error handling
 import { ref, computed } from 'vue'
 import { 
   collection, 
@@ -22,35 +22,37 @@ import { db, storage } from '../../firebase.js'
 import { useAuthStore } from '@/stores/authStore'
 import { useSettings } from '@/composables/useSettings.js'
 
+// Global state
 const isLoading = ref(false)
 const error = ref('')
+
+// Error messages
+const errorMessages = {
+  EN: {
+    'upload-failed': 'Failed to upload file. Please try again.',
+    'post-failed': 'Failed to create post. Please try again.',
+    'fetch-failed': 'Failed to load posts. Please try again.',
+    'delete-failed': 'Failed to delete post. Please try again.',
+    'unauthorized': 'You must be logged in to perform this action.',
+    'file-too-large': 'File size must be less than 10MB.',
+    'invalid-file-type': 'Invalid file type. Only images, videos, and audio files are allowed.'
+  },
+  VN: {
+    'upload-failed': 'Tải file lên thất bại. Vui lòng thử lại.',
+    'post-failed': 'Tạo bài viết thất bại. Vui lòng thử lại.',
+    'fetch-failed': 'Tải bài viết thất bại. Vui lòng thử lại.',
+    'delete-failed': 'Xóa bài viết thất bại. Vui lòng thử lại.',
+    'unauthorized': 'Bạn phải đăng nhập để thực hiện hành động này.',
+    'file-too-large': 'Kích thước file phải nhỏ hơn 10MB.',
+    'invalid-file-type': 'Loại file không hợp lệ. Chỉ cho phép ảnh, video và âm thanh.'
+  }
+}
 
 export function useFirestore() {
   const { user } = useAuthStore()
   const { currentLanguage } = useSettings()
 
-  // Error messages
-  const errorMessages = {
-    EN: {
-      'upload-failed': 'Failed to upload file. Please try again.',
-      'post-failed': 'Failed to create post. Please try again.',
-      'fetch-failed': 'Failed to load posts. Please try again.',
-      'delete-failed': 'Failed to delete post. Please try again.',
-      'unauthorized': 'You must be logged in to perform this action.',
-      'file-too-large': 'File size must be less than 10MB.',
-      'invalid-file-type': 'Invalid file type. Only images, videos, and audio files are allowed.'
-    },
-    VN: {
-      'upload-failed': 'Tải file lên thất bại. Vui lòng thử lại.',
-      'post-failed': 'Tạo bài viết thất bại. Vui lòng thử lại.',
-      'fetch-failed': 'Tải bài viết thất bại. Vui lòng thử lại.',
-      'delete-failed': 'Xóa bài viết thất bại. Vui lòng thử lại.',
-      'unauthorized': 'Bạn phải đăng nhập để thực hiện hành động này.',
-      'file-too-large': 'Kích thước file phải nhỏ hơn 10MB.',
-      'invalid-file-type': 'Loại file không hợp lệ. Chỉ cho phép ảnh, video và âm thanh.'
-    }
-  }
-
+  // Error utilities
   const setError = (errorKey) => {
     error.value = errorMessages[currentLanguage.value][errorKey] || errorKey
   }
@@ -59,18 +61,17 @@ export function useFirestore() {
     error.value = ''
   }
 
-  // Validate file before upload - Updated to include audio
+  // File validation
   const validateFile = (file) => {
-    // Check file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
+    const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+    const ALLOWED_TYPES = ['image/', 'video/', 'audio/']
+    
+    if (file.size > MAX_SIZE) {
       setError('file-too-large')
       return false
     }
 
-    // Check file type - Updated to include audio files
-    if (!file.type.startsWith('image/') && 
-        !file.type.startsWith('video/') && 
-        !file.type.startsWith('audio/')) {
+    if (!ALLOWED_TYPES.some(type => file.type.startsWith(type))) {
       setError('invalid-file-type')
       return false
     }
@@ -128,7 +129,7 @@ export function useFirestore() {
         mediaUrl: postData.mediaUrl || '',
         mediaType: postData.mediaType || '',
         fileName: postData.fileName || '',
-        storagePath: postData.storagePath || '', // Add storage path for deletion
+        storagePath: postData.storagePath || '',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         likes: 0,
@@ -156,10 +157,8 @@ export function useFirestore() {
       isLoading.value = true
       clearError()
 
-      // Upload file first
       const fileData = await uploadFile(file)
       
-      // Create post with file data
       const postData = {
         caption,
         mediaUrl: fileData.url,
@@ -169,7 +168,6 @@ export function useFirestore() {
       }
 
       const post = await createPost(postData)
-      
       return post
     } catch (error) {
       console.error('Create post with file error:', error)
@@ -177,7 +175,7 @@ export function useFirestore() {
     }
   }
 
-  // Get posts (with pagination)
+  // Get posts with pagination
   const getPosts = async (limitCount = 10) => {
     try {
       isLoading.value = true
@@ -209,7 +207,7 @@ export function useFirestore() {
     }
   }
 
-  // Delete post (and associated file)
+  // Delete post and associated file
   const deletePost = async (postId, storagePath = null) => {
     if (!user.value) {
       setError('unauthorized')
@@ -286,7 +284,7 @@ export function useFirestore() {
     deletePost,
     updatePost,
     
-    // Utility
+    // Utilities
     clearError,
     validateFile
   }

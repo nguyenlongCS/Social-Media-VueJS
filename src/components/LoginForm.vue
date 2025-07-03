@@ -10,12 +10,20 @@
     </div>
 
     <div class="form-container">
+      <!-- Login Form -->
       <form v-show="activeTab === 'login'" class="form" @submit.prevent="onLogin">
         <div class="input-group">
-          <input type="email" class="input-field theme-input" :placeholder="t.emailPlaceholder" v-model="loginForm.email" required>
+          <input type="email" 
+                 class="input-field theme-input" 
+                 :placeholder="t.emailPlaceholder" 
+                 v-model="loginForm.email" 
+                 required>
           <div class="password-input-container">
-            <input :type="showPassword ? 'text' : 'password'" class="input-field theme-input" :placeholder="t.passwordPlaceholder"
-              v-model="loginForm.password" required>
+            <input :type="showPassword ? 'text' : 'password'" 
+                   class="input-field theme-input" 
+                   :placeholder="t.passwordPlaceholder"
+                   v-model="loginForm.password" 
+                   required>
             <button type="button" class="toggle-password" @click="showPassword = !showPassword">
               <img :src="showPassword ? '/src/components/icons/hide.png' : '/src/components/icons/show.png'" 
                    :alt="showPassword ? 'Hide password' : 'Show password'" 
@@ -33,16 +41,24 @@
         </div>
 
         <button type="submit" class="submit-button" :disabled="loading">
-          {{ loading ? (currentLanguage === 'EN' ? 'Logging in...' : 'Đang đăng nhập...') : t.loginBtn }}
+          {{ loading ? getButtonText('login') : t.loginBtn }}
         </button>
       </form>
 
+      <!-- Signup Form -->
       <form v-show="activeTab === 'signup'" class="form" @submit.prevent="onSignup">
         <div class="input-group">
-          <input type="email" class="input-field theme-input" :placeholder="t.emailPlaceholder" v-model="signupForm.email" required>
+          <input type="email" 
+                 class="input-field theme-input" 
+                 :placeholder="t.emailPlaceholder" 
+                 v-model="signupForm.email" 
+                 required>
           <div class="password-input-container">
-            <input :type="showPasswordSignup ? 'text' : 'password'" class="input-field theme-input"
-              :placeholder="t.passwordPlaceholder" v-model="signupForm.password" required>
+            <input :type="showPasswordSignup ? 'text' : 'password'" 
+                   class="input-field theme-input"
+                   :placeholder="t.passwordPlaceholder" 
+                   v-model="signupForm.password" 
+                   required>
             <button type="button" class="toggle-password" @click="showPasswordSignup = !showPasswordSignup">
               <img :src="showPasswordSignup ? '/src/components/icons/hide.png' : '/src/components/icons/show.png'" 
                    :alt="showPasswordSignup ? 'Hide password' : 'Show password'" 
@@ -50,8 +66,11 @@
             </button>
           </div>
           <div class="password-input-container">
-            <input :type="showConfirmPassword ? 'text' : 'password'" class="input-field theme-input"
-              :placeholder="t.confirmPasswordPlaceholder" v-model="signupForm.confirmPassword" required>
+            <input :type="showConfirmPassword ? 'text' : 'password'" 
+                   class="input-field theme-input"
+                   :placeholder="t.confirmPasswordPlaceholder" 
+                   v-model="signupForm.confirmPassword" 
+                   required>
             <button type="button" class="toggle-password" @click="showConfirmPassword = !showConfirmPassword">
               <img :src="showConfirmPassword ? '/src/components/icons/hide.png' : '/src/components/icons/show.png'" 
                    :alt="showConfirmPassword ? 'Hide password' : 'Show password'" 
@@ -61,10 +80,11 @@
         </div>
 
         <button type="submit" class="submit-button" :disabled="loading">
-          {{ loading ? (currentLanguage === 'EN' ? 'Signing up...' : 'Đang đăng ký...') : t.signupBtn }}
+          {{ loading ? getButtonText('signup') : t.signupBtn }}
         </button>
       </form>
 
+      <!-- Messages -->
       <div v-if="error" class="error-message">{{ error }}</div>
       <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
     </div>
@@ -77,7 +97,6 @@ import { useSettings } from '@/composables/useSettings.js'
 import { useAuth } from '@/composables/useAuth.js'
 import { useValidation } from '@/composables/useValidation.js'
 
-// Updated imports - hợp nhất từ nhiều composables
 const { t, currentLanguage, getRememberedAuth } = useSettings()
 const {
   loading,
@@ -92,14 +111,13 @@ const {
   clearMessages,
   handleError
 } = useAuth()
-
-// Use validation composable - thay thế inline validation
 const {
   validateLoginForm,
   validateSignupForm,
   validateForgotPasswordForm
 } = useValidation()
 
+// State
 const activeTab = ref('login')
 const rememberMe = ref(false)
 const showPassword = ref(false)
@@ -117,15 +135,7 @@ const signupForm = reactive({
   confirmPassword: ''
 })
 
-onMounted(() => {
-  const remembered = getRememberedAuth()
-  if (remembered.email) {
-    loginForm.email = remembered.email
-    loginForm.password = remembered.password ? decryptPassword(remembered.password) : ''
-    rememberMe.value = true
-  }
-})
-
+// Methods
 const switchTab = (tab) => {
   activeTab.value = tab
   clearMessages()
@@ -167,13 +177,22 @@ const onForgotPassword = () => {
   handleForgotPassword(loginForm.email)
 }
 
-// Helper to get dynamic loading text
 const getButtonText = (type) => {
   if (!loading.value) {
     return type === 'login' ? t.loginBtn : t.signupBtn
   }
   return getLoadingMessage(type === 'login' ? 'logging-in' : 'signing-up')
 }
+
+// Initialize remembered auth
+onMounted(() => {
+  const remembered = getRememberedAuth()
+  if (remembered.email) {
+    loginForm.email = remembered.email
+    loginForm.password = remembered.password ? decryptPassword(remembered.password) : ''
+    rememberMe.value = true
+  }
+})
 </script>
 
 <style scoped>
@@ -228,7 +247,6 @@ const getButtonText = (type) => {
   gap: 15px;
 }
 
-/* Force theme color for all input fields */
 .input-field,
 .theme-input {
   width: 100%;
@@ -273,7 +291,6 @@ const getButtonText = (type) => {
   opacity: 0.7;
   transition: var(--transition);
 }
-
 
 .form-options {
   display: flex;
