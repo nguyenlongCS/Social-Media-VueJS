@@ -65,10 +65,6 @@
         <img v-else src="/src/components/icons/post.png" alt="Post" class="control-icon">
       </button>
     </div>
-
-    <!-- Messages -->
-    <div v-if="error" class="error-message">{{ error }}</div>
-    <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
   </div>
 </template>
 
@@ -77,17 +73,18 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSettings } from '@/composables/useSettings.js'
 import { useFirestore } from '@/composables/useFirestore.js'
+import { useMessageStore } from '@/stores/messageStore.js'
 
 const router = useRouter()
-const { t, currentLanguage } = useSettings()
-const { createPostWithFile, loading, error, clearError } = useFirestore()
+const { t } = useSettings()
+const { createPostWithFile, loading } = useFirestore()
+const { clearMessages } = useMessageStore()
 
 // State
 const fileInput = ref(null)
 const statusCaption = ref('')
 const selectedFile = ref(null)
 const filePreviewUrl = ref('')
-const successMessage = ref('')
 
 // Computed
 const canPost = computed(() => !!selectedFile.value && !loading.value)
@@ -112,7 +109,7 @@ const handleFileSelect = (event) => {
   }
   
   filePreviewUrl.value = URL.createObjectURL(file)
-  clearError()
+  clearMessages()
 }
 
 const cancelStatus = () => {
@@ -124,15 +121,8 @@ const postStatus = async () => {
   if (!selectedFile.value || loading.value) return
   
   try {
-    clearError()
-    successMessage.value = ''
-    
+    clearMessages()
     await createPostWithFile(selectedFile.value, statusCaption.value)
-    
-    successMessage.value = currentLanguage.value === 'EN' 
-      ? 'Post created successfully!' 
-      : 'Tạo bài viết thành công!'
-    
     setTimeout(() => cleanupAndNavigate('/home'), 1500)
   } catch (createError) {
     console.error('Failed to create post:', createError)
@@ -145,8 +135,7 @@ const cleanupAndNavigate = (route) => {
   }
   selectedFile.value = null
   statusCaption.value = ''
-  successMessage.value = ''
-  clearError()
+  clearMessages()
   router.push(route)
 }
 </script>
@@ -220,7 +209,6 @@ const cleanupAndNavigate = (route) => {
   opacity: 0.8;
   transition: var(--transition);
 }
-
 
 /* Media Preview */
 .preview-media {
@@ -373,28 +361,5 @@ const cleanupAndNavigate = (route) => {
 .caption-input:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-/* Messages */
-.error-message,
-.success-message {
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: var(--border-radius);
-  font-size: 12px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.error-message {
-  background-color: rgba(255, 0, 0, 0.1);
-  border: 1px solid rgba(255, 0, 0, 0.3);
-  color: #ff0000;
-}
-
-.success-message {
-  background-color: rgba(0, 255, 0, 0.1);
-  border: 1px solid rgba(0, 255, 0, 0.3);
-  color: #00aa00;
 }
 </style>

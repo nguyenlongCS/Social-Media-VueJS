@@ -1,4 +1,4 @@
-// composables/useAuth.js - Optimized for better readability
+// composables/useAuth.js - Fixed to actually use global messages
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
@@ -6,10 +6,9 @@ import { loginWithGoogle, loginWithFacebook } from '../../firebase.js'
 import { auth } from '../../firebase.js'
 import { useAuthStore } from '@/stores/authStore'
 import { useSettings } from '@/composables/useSettings.js'
+import { useMessageStore } from '@/stores/messageStore.js'
 
-// Global state
-const globalError = ref('')
-const globalSuccessMessage = ref('')
+// Local loading state only
 const isLoading = ref(false)
 
 // Error and success messages
@@ -29,6 +28,9 @@ const messages = {
       'password-reset-failed': 'Failed to send password reset email. Please try again.',
       'password-mismatch': 'Passwords do not match.',
       'email-required': 'Please enter your email address first.',
+      'password-required': 'Please enter your password.',
+      'confirm-password-required': 'Please confirm your password.',
+      'email-invalid': 'Please enter a valid email address.',
       'network-error': 'Network error. Please check your connection.',
       'unknown-error': 'An unexpected error occurred. Please try again.'
     },
@@ -58,6 +60,9 @@ const messages = {
       'password-reset-failed': 'Gửi email đặt lại mật khẩu thất bại. Vui lòng thử lại.',
       'password-mismatch': 'Mật khẩu không khớp.',
       'email-required': 'Vui lòng nhập địa chỉ email trước.',
+      'password-required': 'Vui lòng nhập mật khẩu.',
+      'confirm-password-required': 'Vui lòng xác nhận mật khẩu.',
+      'email-invalid': 'Vui lòng nhập địa chỉ email hợp lệ.',
       'network-error': 'Lỗi mạng. Vui lòng kiểm tra kết nối.',
       'unknown-error': 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.'
     },
@@ -78,37 +83,47 @@ export function useAuth() {
   const router = useRouter()
   const { isLoggedIn, logout } = useAuthStore()
   const { currentLanguage } = useSettings()
+  const { setError, setSuccess, setLoading, clearMessages, setSuccessWithDelay } = useMessageStore()
 
-  // Message utilities
+  // Message utilities - ALWAYS use global store
   const handleError = (error, fallbackKey = 'unknown-error') => {
     const errorMessages = messages[currentLanguage.value].errors
     
+    let errorMessage = ''
     if (error.code) {
-      globalError.value = errorMessages[error.code] || errorMessages[fallbackKey]
+      errorMessage = errorMessages[error.code] || errorMessages[fallbackKey]
     } else if (error.message?.includes('network')) {
-      globalError.value = errorMessages['network-error']
+      errorMessage = errorMessages['network-error']
     } else if (typeof error === 'string') {
-      globalError.value = errorMessages[error] || errorMessages[fallbackKey]
+      errorMessage = errorMessages[error] || errorMessages[fallbackKey]
     } else {
-      globalError.value = errorMessages[fallbackKey]
+      errorMessage = errorMessages[fallbackKey]
     }
     
-    globalSuccessMessage.value = ''
+    console.log('Auth Error:', errorMessage) // Debug log
+    setError(errorMessage)
   }
 
-  const setSuccess = (successKey) => {
+  // Message utilities for validation errors
+  const handleValidationError = (errorKey) => {
+    const errorMessages = messages[currentLanguage.value].errors
+    const message = errorMessages[errorKey] || errorMessages['unknown-error']
+    console.log('Validation Error:', message) // Debug log
+    setError(message)
+  }
+
+  const setSuccessMessage = (successKey) => {
     const successMessages = messages[currentLanguage.value].success
-    globalSuccessMessage.value = successMessages[successKey] || ''
-    globalError.value = ''
+    const message = successMessages[successKey] || ''
+    console.log('Auth Success:', message) // Debug log
+    setSuccessWithDelay(message, 2000)
   }
 
-  const clearMessages = () => {
-    globalError.value = ''
-    globalSuccessMessage.value = ''
-  }
-
-  const getLoadingMessage = (key) => {
-    return messages[currentLanguage.value].loading[key] || ''
+  const setLoadingMessage = (loadingKey) => {
+    const loadingMessages = messages[currentLanguage.value].loading
+    const message = loadingMessages[loadingKey] || ''
+    console.log('Auth Loading:', message) // Debug log
+    setLoading(message)
   }
 
   // Password encryption utilities
@@ -122,99 +137,129 @@ export function useAuth() {
     }
   }
 
-  // Async operation wrapper
-  const withErrorHandling = async (operation, loadingKey, successKey, fallbackErrorKey) => {
+  // Authentication methods - Fixed to use global messages
+  const handleLogin = async (loginForm, rememberMe) => {
     try {
       isLoading.value = true
       clearMessages()
+      setLoadingMessage('logging-in')
       
-      const result = await operation()
+      await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password)
       
-      if (successKey) {
-        setSuccess(successKey)
+      if (rememberMe) {
+        const { setRememberedAuth } = useSettings()
+        setRememberedAuth(loginForm.email, encryptPassword(loginForm.password))
+      } else {
+        const { clearRememberedAuth } = useSettings()
+        clearRememberedAuth()
       }
       
-      return result
+      setSuccessMessage('login-success')
+      
+      // Navigate after showing success message
+      setTimeout(() => {
+        router.push('/home')
+      }, 1000)
+      
     } catch (error) {
-      console.error('Operation failed:', error)
-      handleError(error, fallbackErrorKey)
-      throw error
+      console.error('Login failed:', error)
+      handleError(error, 'login-failed')
     } finally {
       isLoading.value = false
+      setLoading('')
     }
   }
 
-  // Authentication methods
-  const handleLogin = async (loginForm, rememberMe) => {
-    return withErrorHandling(
-      async () => {
-        await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password)
-        
-        if (rememberMe) {
-          const { setRememberedAuth } = useSettings()
-          setRememberedAuth(loginForm.email, encryptPassword(loginForm.password))
-        } else {
-          const { clearRememberedAuth } = useSettings()
-          clearRememberedAuth()
-        }
-        
-        router.push('/home')
-      },
-      'logging-in',
-      null,
-      'login-failed'
-    )
-  }
-
   const handleSignup = async (signupForm) => {
-    return withErrorHandling(
-      async () => {
-        await createUserWithEmailAndPassword(auth, signupForm.email, signupForm.password)
+    try {
+      isLoading.value = true
+      clearMessages()
+      setLoadingMessage('signing-up')
+      
+      await createUserWithEmailAndPassword(auth, signupForm.email, signupForm.password)
+      
+      setSuccessMessage('signup-success')
+      
+      // Navigate after showing success message
+      setTimeout(() => {
         router.push('/home')
-      },
-      'signing-up',
-      null,
-      'signup-failed'
-    )
+      }, 1000)
+      
+    } catch (error) {
+      console.error('Signup failed:', error)
+      handleError(error, 'signup-failed')
+    } finally {
+      isLoading.value = false
+      setLoading('')
+    }
   }
 
   const handleForgotPassword = async (email) => {
-    return withErrorHandling(
-      async () => {
-        await sendPasswordResetEmail(auth, email)
-      },
-      'sending-reset',
-      'password-reset-sent',
-      'password-reset-failed'
-    )
+    try {
+      isLoading.value = true
+      clearMessages()
+      setLoadingMessage('sending-reset')
+      
+      await sendPasswordResetEmail(auth, email)
+      setSuccessMessage('password-reset-sent')
+      
+    } catch (error) {
+      console.error('Password reset failed:', error)
+      handleError(error, 'password-reset-failed')
+    } finally {
+      isLoading.value = false
+      setLoading('')
+    }
   }
 
   const handleGoogleLogin = async () => {
-    return withErrorHandling(
-      async () => {
-        const user = await loginWithGoogle()
-        console.log('Google login successful:', user)
+    try {
+      isLoading.value = true
+      clearMessages()
+      setLoadingMessage('logging-in')
+      
+      const user = await loginWithGoogle()
+      console.log('Google login successful:', user)
+      
+      setSuccessMessage('login-success')
+      
+      setTimeout(() => {
         router.push('/home')
-        return user
-      },
-      'logging-in',
-      null,
-      'login-failed'
-    )
+      }, 1000)
+      
+      return user
+    } catch (error) {
+      console.error('Google login failed:', error)
+      handleError(error, 'login-failed')
+    } finally {
+      isLoading.value = false
+      setLoading('')
+    }
   }
 
   const handleFacebookLogin = async () => {
-    return withErrorHandling(
-      async () => {
-        const user = await loginWithFacebook()
-        console.log('Facebook login successful:', user)
+    try {
+      isLoading.value = true
+      clearMessages()
+      setLoadingMessage('logging-in')
+      
+      const user = await loginWithFacebook()
+      console.log('Facebook login successful:', user)
+      
+      setSuccessMessage('login-success')
+      
+      setTimeout(() => {
         router.push('/home')
-        return user
-      },
-      'logging-in',
-      null,
-      'login-failed'
-    )
+      }, 1000)
+      
+      return user
+    } catch (error) {
+      console.error('Facebook login failed:', error)
+      handleError(error, 'login-failed')
+    } finally {
+      isLoading.value = false
+      setLoading('')
+    }
   }
 
   const handleLogout = async () => {
@@ -222,17 +267,17 @@ export function useAuth() {
     
     try {
       await logout()
+      clearMessages()
       router.push('/')
     } catch (error) {
       console.error('Logout error:', error)
+      handleError(error)
     }
   }
 
   return {
     // State
     loading: computed(() => isLoading.value),
-    error: computed(() => globalError.value),
-    successMessage: computed(() => globalSuccessMessage.value),
     isLoggedIn,
     
     // Auth methods
@@ -246,8 +291,7 @@ export function useAuth() {
     handleFacebookLogin,
     
     // Utility methods
-    clearMessages,
-    getLoadingMessage,
-    handleError
+    handleError,
+    handleValidationError
   }
 }

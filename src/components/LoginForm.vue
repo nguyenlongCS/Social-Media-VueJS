@@ -83,10 +83,6 @@
           {{ loading ? getButtonText('signup') : t.signupBtn }}
         </button>
       </form>
-
-      <!-- Messages -->
-      <div v-if="error" class="error-message">{{ error }}</div>
-      <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
     </div>
   </div>
 </template>
@@ -96,26 +92,24 @@ import { ref, reactive, onMounted } from 'vue'
 import { useSettings } from '@/composables/useSettings.js'
 import { useAuth } from '@/composables/useAuth.js'
 import { useValidation } from '@/composables/useValidation.js'
+import { useMessageStore } from '@/stores/messageStore.js'
 
 const { t, currentLanguage, getRememberedAuth } = useSettings()
 const {
   loading,
-  error,
-  successMessage,
   encryptPassword,
   decryptPassword,
   handleLogin,
   handleSignup,
   handleForgotPassword,
-  getLoadingMessage,
-  clearMessages,
-  handleError
+  handleValidationError
 } = useAuth()
 const {
   validateLoginForm,
   validateSignupForm,
   validateForgotPasswordForm
 } = useValidation()
+const { clearMessages } = useMessageStore()
 
 // State
 const activeTab = ref('login')
@@ -146,7 +140,7 @@ const onLogin = () => {
 
   const validationError = validateLoginForm(loginForm)
   if (validationError) {
-    handleError(validationError)
+    handleValidationError(validationError)
     return
   }
 
@@ -158,7 +152,7 @@ const onSignup = () => {
 
   const validationError = validateSignupForm(signupForm)
   if (validationError) {
-    handleError(validationError)
+    handleValidationError(validationError)
     return
   }
 
@@ -170,7 +164,7 @@ const onForgotPassword = () => {
 
   const validationError = validateForgotPasswordForm(loginForm.email)
   if (validationError) {
-    handleError(validationError)
+    handleValidationError(validationError)
     return
   }
 
@@ -181,7 +175,11 @@ const getButtonText = (type) => {
   if (!loading.value) {
     return type === 'login' ? t.loginBtn : t.signupBtn
   }
-  return getLoadingMessage(type === 'login' ? 'logging-in' : 'signing-up')
+  const messages = {
+    EN: { login: 'Logging in...', signup: 'Signing up...' },
+    VN: { login: 'Đang đăng nhập...', signup: 'Đang đăng ký...' }
+  }
+  return messages[currentLanguage.value][type]
 }
 
 // Initialize remembered auth
@@ -339,29 +337,5 @@ onMounted(() => {
 .submit-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.error-message {
-  margin-top: 15px;
-  padding: 12px;
-  background-color: rgba(255, 0, 0, 0.1);
-  border: 1px solid rgba(255, 0, 0, 0.3);
-  border-radius: var(--border-radius);
-  color: #ff0000;
-  font-size: 14px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.success-message {
-  margin-top: 15px;
-  padding: 12px;
-  background-color: rgba(0, 255, 0, 0.1);
-  border: 1px solid rgba(0, 255, 0, 0.3);
-  border-radius: var(--border-radius);
-  color: #00aa00;
-  font-size: 14px;
-  text-align: center;
-  flex-shrink: 0;
 }
 </style>

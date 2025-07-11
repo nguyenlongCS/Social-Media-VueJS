@@ -16,7 +16,7 @@
       </div>
     </div>
     
-    <!-- Global Footer for all messages -->
+    <!-- Global Footer with all messages -->
     <Footer 
       :success-message="globalSuccessMessage"
       :error-message="globalErrorMessage"
@@ -33,19 +33,13 @@ import HomeMenu from '@/components/HomeMenu.vue'
 import HomeFeed from '@/components/HomeFeed.vue'
 import Footer from '@/components/Footer.vue'
 import { useMobileSwipe } from '@/composables/useMobileSwipe.js'
-import { useAuth } from '@/composables/useAuth.js'
-import { useFirestore } from '@/composables/useFirestore.js'
+import { useMessageStore } from '@/stores/messageStore.js'
 
 const { getContainerClass } = useMobileSwipe()
-const { error: authError, successMessage: authSuccess, loading: authLoading } = useAuth()
-const { error: firestoreError, loading: firestoreLoading } = useFirestore()
+const { successMessage, errorMessage, loadingMessage } = useMessageStore()
 
 // Global message handling
-const globalSuccessMessage = computed(() => authSuccess.value)
-const globalErrorMessage = computed(() => authError.value || firestoreError.value)
-const globalLoadingMessage = computed(() => {
-  if (authLoading.value) return 'Authenticating...'
-  if (firestoreLoading.value) return 'Loading posts...'
-  return ''
-})
+const globalSuccessMessage = computed(() => successMessage.value)
+const globalErrorMessage = computed(() => errorMessage.value)
+const globalLoadingMessage = computed(() => loadingMessage.value)
 </script>

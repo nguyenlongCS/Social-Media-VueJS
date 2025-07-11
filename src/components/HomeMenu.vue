@@ -5,12 +5,16 @@
             <button class="menu-button" @click="navigateToDiscover">{{ t.actionButtons.discover }}</button>
             <button class="menu-button">{{ t.actionButtons.settings }}</button>
         </div>
+
+        <!-- Test Messages Component - for debugging -->
+        <TestMessages />
     </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router'
 import { useSettings } from '@/composables/useSettings.js'
+import TestMessages from '@/components/TestMessages.vue'
 
 const router = useRouter()
 const { t } = useSettings()
@@ -30,15 +34,15 @@ const navigateToDiscover = () => {
     padding: 30px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    overflow-y: auto;
 }
 
 .menu-buttons {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    flex: 1;
-    justify-content: flex-start;
+    margin-bottom: 20px;
 }
 
 .menu-button {

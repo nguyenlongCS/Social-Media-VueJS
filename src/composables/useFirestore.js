@@ -1,4 +1,4 @@
-// composables/useFirestore.js - Optimized for better error handling
+// composables/useFirestore.js - Fixed to preserve posts and show messages
 import { ref, computed } from 'vue'
 import { 
   collection, 
@@ -21,8 +21,9 @@ import {
 import { db, storage } from '../../firebase.js'
 import { useAuthStore } from '@/stores/authStore'
 import { useSettings } from '@/composables/useSettings.js'
+import { useMessageStore } from '@/stores/messageStore.js'
 
-// Global state
+// Local state
 const isLoading = ref(false)
 const error = ref('')
 
@@ -48,17 +49,60 @@ const errorMessages = {
   }
 }
 
+const loadingMessages = {
+  EN: {
+    'uploading': 'Uploading file...',
+    'creating-post': 'Creating post...',
+    'loading-posts': 'Loading posts...',
+    'deleting-post': 'Deleting post...'
+  },
+  VN: {
+    'uploading': 'Đang tải file lên...',
+    'creating-post': 'Đang tạo bài viết...',
+    'loading-posts': 'Đang tải bài viết...',
+    'deleting-post': 'Đang xóa bài viết...'
+  }
+}
+
+const successMessages = {
+  EN: {
+    'post-created': 'Post created successfully!',
+    'post-deleted': 'Post deleted successfully!'
+  },
+  VN: {
+    'post-created': 'Tạo bài viết thành công!',
+    'post-deleted': 'Xóa bài viết thành công!'
+  }
+}
+
 export function useFirestore() {
   const { user } = useAuthStore()
   const { currentLanguage } = useSettings()
+  const { setError, setSuccess, setLoading, clearMessages, setSuccessWithDelay } = useMessageStore()
 
-  // Error utilities
-  const setError = (errorKey) => {
-    error.value = errorMessages[currentLanguage.value][errorKey] || errorKey
+  // Error utilities - both local and global
+  const setErrorMessage = (errorKey) => {
+    const message = errorMessages[currentLanguage.value][errorKey] || errorKey
+    error.value = message
+    setError(message)
   }
 
   const clearError = () => {
     error.value = ''
+  }
+
+  const handleSuccess = (successKey, withDelay = true) => {
+    const message = successMessages[currentLanguage.value][successKey] || ''
+    if (withDelay) {
+      setSuccessWithDelay(message)
+    } else {
+      setSuccess(message)
+    }
+  }
+
+  const handleLoading = (loadingKey) => {
+    const message = loadingMessages[currentLanguage.value][loadingKey] || ''
+    setLoading(message)
   }
 
   // File validation
@@ -67,12 +111,12 @@ export function useFirestore() {
     const ALLOWED_TYPES = ['image/', 'video/', 'audio/']
     
     if (file.size > MAX_SIZE) {
-      setError('file-too-large')
+      setErrorMessage('file-too-large')
       return false
     }
 
     if (!ALLOWED_TYPES.some(type => file.type.startsWith(type))) {
-      setError('invalid-file-type')
+      setErrorMessage('invalid-file-type')
       return false
     }
 
@@ -82,7 +126,7 @@ export function useFirestore() {
   // Upload file to Firebase Storage
   const uploadFile = async (file) => {
     if (!user.value) {
-      setError('unauthorized')
+      setErrorMessage('unauthorized')
       throw new Error('User not authenticated')
     }
 
@@ -91,6 +135,8 @@ export function useFirestore() {
     }
 
     try {
+      handleLoading('uploading')
+      
       const fileName = `${Date.now()}_${file.name}`
       const fileRef = storageRef(storage, `uploads/${user.value.uid}/${fileName}`)
       
@@ -106,7 +152,7 @@ export function useFirestore() {
       }
     } catch (uploadError) {
       console.error('File upload error:', uploadError)
-      setError('upload-failed')
+      setErrorMessage('upload-failed')
       throw uploadError
     }
   }
@@ -114,7 +160,7 @@ export function useFirestore() {
   // Create new post
   const createPost = async (postData) => {
     if (!user.value) {
-      setError('unauthorized')
+      setErrorMessage('unauthorized')
       throw new Error('User not authenticated')
     }
 
@@ -144,7 +190,7 @@ export function useFirestore() {
       }
     } catch (createError) {
       console.error('Create post error:', createError)
-      setError('post-failed')
+      setErrorMessage('post-failed')
       throw createError
     } finally {
       isLoading.value = false
@@ -156,6 +202,8 @@ export function useFirestore() {
     try {
       isLoading.value = true
       clearError()
+      clearMessages()
+      handleLoading('creating-post')
 
       const fileData = await uploadFile(file)
       
@@ -168,10 +216,18 @@ export function useFirestore() {
       }
 
       const post = await createPost(postData)
+      
+      // Show success message
+      console.log('Post created, showing success message') // Debug log
+      handleSuccess('post-created')
+      
       return post
     } catch (error) {
       console.error('Create post with file error:', error)
       throw error
+    } finally {
+      isLoading.value = false
+      setLoading('')
     }
   }
 
@@ -200,7 +256,7 @@ export function useFirestore() {
       return posts
     } catch (fetchError) {
       console.error('Get posts error:', fetchError)
-      setError('fetch-failed')
+      setErrorMessage('fetch-failed')
       throw fetchError
     } finally {
       isLoading.value = false
@@ -210,13 +266,15 @@ export function useFirestore() {
   // Delete post and associated file
   const deletePost = async (postId, storagePath = null) => {
     if (!user.value) {
-      setError('unauthorized')
+      setErrorMessage('unauthorized')
       throw new Error('User not authenticated')
     }
 
     try {
       isLoading.value = true
       clearError()
+      clearMessages()
+      handleLoading('deleting-post')
 
       // Delete file from storage if exists
       if (storagePath) {
@@ -231,21 +289,23 @@ export function useFirestore() {
 
       // Delete post document
       await deleteDoc(doc(db, 'posts', postId))
+      handleSuccess('post-deleted')
       
       return true
     } catch (deleteError) {
       console.error('Delete post error:', deleteError)
-      setError('delete-failed')
+      setErrorMessage('delete-failed')
       throw deleteError
     } finally {
       isLoading.value = false
+      setLoading('')
     }
   }
 
   // Update post
   const updatePost = async (postId, updates) => {
     if (!user.value) {
-      setError('unauthorized')
+      setErrorMessage('unauthorized')
       throw new Error('User not authenticated')
     }
 
@@ -264,7 +324,7 @@ export function useFirestore() {
       return true
     } catch (updateError) {
       console.error('Update post error:', updateError)
-      setError('post-failed')
+      setErrorMessage('post-failed')
       throw updateError
     } finally {
       isLoading.value = false
@@ -272,7 +332,7 @@ export function useFirestore() {
   }
 
   return {
-    // State
+    // State - keep both local and global compatibility
     loading: computed(() => isLoading.value),
     error: computed(() => error.value),
     
